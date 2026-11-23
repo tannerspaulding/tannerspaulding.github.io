@@ -1,6 +1,6 @@
 # tannerspaulding.github.io
 
-Home page for tannerspaulding.com. Published to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`.
+Home page for tannerspaulding.com. Published by GitHub Pages straight from the `main` branch on every push. The `CNAME` file sets the custom domain.
 
 The labs are separate repos and appear under this domain automatically as project sites:
 
