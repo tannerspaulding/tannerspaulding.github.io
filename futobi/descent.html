@@ -1,0 +1,896 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Futobi Descent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* One page, three bands: the surface (every headline you could fall into), the depths (where you fall), the log (what you found on the way down). */
+:root{
+  --bg:#f4f3ef; --panel:#fbfaf7; --sunk:#ecebe6; --ink:#15171c; --ink2:#464a54; --ink3:#767a85;
+  --rule:#d9d8d2; --rule2:#e7e6e0; --accent:#2f4fd9; --accent-ink:#2440c4; --tint:rgba(47,79,217,.09);
+  --s1:#2f4fd9; --s3:#c27a12; --glass:#b9bcc6; --void:#f0efea; --grainblend:multiply;
+  --f-ui:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-display:"Newsreader","Iowan Old Style",Georgia,serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0c0d11; --panel:#121419; --sunk:#191b22; --ink:#ebecef; --ink2:#b2b5bf; --ink3:#848895;
+  --rule:#262932; --rule2:#1c1f26; --accent:#7089ff; --accent-ink:#9aabff; --tint:rgba(112,137,255,.12);
+  --s1:#6b84f5; --s3:#d08a26; --glass:#3a3e4a; --void:#08090c; --grainblend:screen; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0c0d11; --panel:#121419; --sunk:#191b22; --ink:#ebecef; --ink2:#b2b5bf; --ink3:#848895;
+  --rule:#262932; --rule2:#1c1f26; --accent:#7089ff; --accent-ink:#9aabff; --tint:rgba(112,137,255,.12);
+  --s1:#6b84f5; --s3:#d08a26; --glass:#3a3e4a; --void:#08090c; --grainblend:screen; color-scheme:dark; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{padding-block:22px 0}
+.top .wrap{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.mark{font-family:var(--f-display);font-size:26px;font-weight:500;letter-spacing:-.01em}
+.mark i{font-style:normal;color:var(--accent)}
+.sub{color:var(--ink3);font-size:12.5px}
+.sub2{margin-left:auto;color:var(--ink3);font-size:12px}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:end;padding-block:26px 18px}
+@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr);gap:8px}}
+.hero h1{font-family:var(--f-display);font-weight:400;font-size:46px;line-height:1.02;margin:0;letter-spacing:-.015em;text-wrap:balance}
+@media (max-width:600px){.hero h1{font-size:34px}}
+.hero h1 em{color:var(--accent)}
+.hero p{margin:0;color:var(--ink2);max-width:60ch}
+.bar{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;margin:0 0 10px}
+.ctl-lab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-right:6px}
+.seg{display:inline-flex;gap:2px;background:var(--sunk);border-radius:10px;padding:3px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:8px;padding:5px 11px;font-size:13px;color:var(--ink2)}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--rule)}
+/* the surface: every headline you can fall into */
+.surface{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:14px}
+@media (max-width:1000px){.surface{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:640px){.surface{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{border:1px solid var(--rule);background:transparent;border-radius:12px;padding:10px 12px 8px;text-align:left;display:flex;flex-direction:column;gap:1px;min-width:0;transition:border-color .15s,background .15s}
+.tile:hover{border-color:var(--ink3)}
+.tile[aria-pressed="true"]{border-color:var(--accent);background:var(--panel)}
+.tile .l{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v{font-family:var(--f-display);font-size:22px;line-height:1.15;font-variant-numeric:tabular-nums}
+.tile .d{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+.tile .d i{width:7px;height:7px;border-radius:50%;flex:none}
+.tile svg{display:block;width:100%;height:22px;margin-top:4px;overflow:visible}
+/* the depths */
+.stage{background:var(--panel);border:1px solid var(--rule);border-radius:16px;overflow:hidden}
+.vp{position:relative;height:min(76vh,700px);min-height:440px;background:var(--void);touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;outline:none}
+.vp:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+.vp canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:var(--grainblend);background-size:180px 180px}
+.hud{position:absolute;display:flex;gap:6px;align-items:center;font-size:12px;pointer-events:none}
+.hud>*{pointer-events:auto}
+.hud.tl{top:12px;left:12px;right:180px;flex-wrap:wrap}
+.hud.bl{bottom:12px;left:12px;flex-wrap:wrap;right:12px}
+@media (max-width:640px){.hud.tl{right:12px}}
+.crumb{border:1px solid var(--rule);background:color-mix(in srgb,var(--panel) 86%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--ink2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crumb:last-child{color:var(--ink);border-color:var(--accent)}
+.crumb-sep{color:var(--ink3);pointer-events:none}
+.hbtn{border:1px solid var(--rule);background:color-mix(in srgb,var(--panel) 90%,transparent);border-radius:9px;padding:5px 11px;font-size:12.5px;color:var(--ink)}
+.hbtn:hover{border-color:var(--accent)}
+.hbtn:disabled{opacity:.4;cursor:default}
+.hbtn.prime{border-color:var(--accent)}
+.hbtn.prime[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.keys{margin-left:auto;color:var(--ink3);font-size:11.5px;pointer-events:none}
+@media (max-width:760px){.keys{display:none}}
+.below{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);border-top:1px solid var(--rule)}
+@media (max-width:900px){.below{grid-template-columns:minmax(0,1fr)}}
+.narr{padding:16px 20px 14px;min-width:0}
+.narr .say{font-family:var(--f-display);font-size:20px;line-height:1.38;margin:0;max-width:70ch}
+.narr .say b{font-weight:500;color:var(--accent-ink)}
+.narr .say b.hurt{color:var(--s3)}
+.narr .meta{margin-top:8px;font-size:12.5px;color:var(--ink3)}
+.log{padding:16px 20px 14px;border-left:1px solid var(--rule);min-width:0}
+@media (max-width:900px){.log{border-left:0;border-top:1px solid var(--rule)}}
+.log h3{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.log ol{margin:0;padding:0;list-style:none;counter-reset:f}
+.log li{position:relative;padding:0 0 9px 26px;font-size:13.5px;line-height:1.45;color:var(--ink)}
+.log li::before{counter-increment:f;content:counter(f,decimal-leading-zero);position:absolute;left:0;top:1px;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)}
+.log li.rows::before{content:"rows"}
+.log li .x{color:var(--ink2)}
+.copy{border:1px solid var(--rule);background:transparent;border-radius:999px;padding:2px 10px;font-size:11.5px;color:var(--ink2);text-transform:none;letter-spacing:0;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:12px 20px 16px;border-top:1px solid var(--rule)}
+.chips .lab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-right:4px}
+.chip{border:1px solid var(--rule);background:transparent;border-radius:999px;padding:4px 11px;font-size:12.5px;color:var(--ink2)}
+.chip small{color:var(--ink3);margin-left:4px;font-variant-numeric:tabular-nums}
+.chip.on{border-color:var(--accent);color:var(--ink);background:var(--tint)}
+.chip.dead{border-style:dashed;cursor:help;color:var(--ink3)}
+.recs{padding:4px 20px 20px;display:none;border-top:1px solid var(--rule)}
+.recs.on{display:block}
+.recs h4{margin:14px 0 8px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.tw{overflow-x:auto}
+.recs table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;min-width:520px}
+.recs td{padding:6px 8px;border-top:1px solid var(--rule2);vertical-align:top}
+.recs td.n{text-align:right;white-space:nowrap}
+.recs td .s{color:var(--ink3)}
+.recs td i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.recs .bottom{margin-top:10px;color:var(--ink3);font-size:12.5px}
+.legendline{display:flex;gap:16px;flex-wrap:wrap;padding:0 20px 16px;font-size:12.5px;color:var(--ink2);align-items:center}
+.legendline i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
+.legendline i.mix{background:repeating-linear-gradient(135deg,var(--glass) 0 2px,transparent 2px 5px);border:1px solid var(--glass)}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.45;padding:8px 11px;border-radius:9px;max-width:300px;opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.tip b{font-weight:600}
+.foot{color:var(--ink3);font-size:12px;padding-block:14px 30px;max-width:90ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head><body>
+<header class="top"><div class="wrap">
+  <span class="mark">futobi<i>.</i></span><span class="sub">Descent</span>
+  <span class="sub2">Invented sample: Larkspur Roasting Co., Jan 2025 to Oct 2026</span>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Every headline has <em>depths</em> under it.</h1>
+    <p>Pick a number on the surface and fall into it. Each floor breaks the piece above into the split that explains it best, cobalt for what helped and ochre for what hurt, and the pieces always add back up. Keep falling and you land on the rows: the people and counts the number was made of.</p>
+  </section>
+
+  <div class="bar">
+    <div><span class="ctl-lab">Compare</span><span class="seg" id="cmp">
+      <button data-v="ytd" class="on">Year to date</button><button data-v="yoy">Last quarter, year on year</button><button data-v="qoq">Last quarter, on the one before</button></span></div>
+  </div>
+  <div class="surface" id="surface" aria-label="Headline numbers"></div>
+
+  <div class="stage">
+    <div class="vp" id="vp" tabindex="0" aria-label="The depths. Arrow keys choose a piece, Enter falls through it, Escape climbs."><canvas id="cv"></canvas><div class="grain"></div>
+      <div class="hud tl" id="crumbs"></div>
+      <div class="hud bl"><button class="hbtn" id="b-up">Climb</button><button class="hbtn" id="b-top">Surface</button><button class="hbtn" id="b-rows">Land on the rows</button><button class="hbtn prime" id="b-auto" aria-pressed="false">Follow the biggest</button><span class="keys">← → choose · Enter falls · Esc climbs</span></div>
+    </div>
+    <div class="legendline"><span><i style="background:var(--s1)"></i>Helped the number</span><span><i style="background:var(--s3)"></i>Hurt it</span><span><i class="mix"></i>Mix: a piece got bigger or smaller, not better or worse</span><span><i style="background:var(--glass)"></i>No good direction</span></div>
+    <div class="below">
+      <div class="narr" id="narr"></div>
+      <div class="log"><h3>The way down <button class="copy" id="copy">Copy</button></h3><ol id="story"></ol></div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="recs" id="recs"></div>
+  </div>
+</main>
+<footer class="wrap foot">Futobi Descent. Computed in this page from an invented coffee roaster (about 63,000 events from a fixed seed) by the Grain Graph engine. Each floor uses the split whose largest single piece explains the most of the floor above. Rates split by exact shift-share, so their pieces carry a striped mix share and still add up. A split the graph can't make shows as no road instead of a wrong number.</footer>
+<div class="tip" id="tip"></div>
+
+<script>
+"use strict";
+
+
+/* ================================================================
+   1. Invented data: Larkspur Roasting Co., Jan 2025 to Oct 2026
+   ================================================================ */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const rnd=mulberry32(20261123);
+const pickW=(items,w)=>{let s=0;for(const x of w)s+=x;let r=rnd()*s;for(let i=0;i<items.length;i++){r-=w[i];if(r<=0)return items[i];}return items[items.length-1];};
+const poisson=l=>{if(l<=0)return 0;const L=Math.exp(-l);let k=0,p=1;do{k++;p*=rnd();}while(p>L);return k-1;};
+const randInt=(a,b)=>a+Math.floor(rnd()*(b-a+1));
+const r2=x=>Math.round(x*100)/100;
+
+const D0=Date.UTC(2025,0,1),DAY=864e5,MONTHS=22;
+const mStart=mi=>(Date.UTC(2025+Math.floor(mi/12),mi%12,1)-D0)/DAY;
+const END_DAY=mStart(MONTHS)-1;
+const MO=new Int16Array(END_DAY+60);
+for(let mi=0;mi<MONTHS+1;mi++){const a=mStart(mi),b=mStart(mi+1);for(let d=a;d<b&&d<MO.length;d++)MO[d]=mi;}
+const MLAB=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const mShort=mi=>MLAB[mi%12]+" '"+(25+Math.floor(mi/12));
+const mLong=mi=>MLAB[mi%12]+' '+(2025+Math.floor(mi/12));
+const qLabel=qi=>'Q'+(qi%4+1)+" '"+(25+Math.floor(qi/4));
+
+const REGIONS=['Northeast','Mid-Atlantic','Southeast','Midwest','West'].map((name,id)=>({id,name}));
+const SITES=[
+ {id:0,name:'Harbor St café',type:'Café',r:1},{id:1,name:'Mill Yard café',type:'Café',r:1},
+ {id:2,name:'Union Hall café',type:'Café',r:0},{id:3,name:'Web store',type:'Online',r:1},
+ {id:4,name:'Wholesale desk',type:'Wholesale',r:1},{id:5,name:'Roastery warehouse',type:'Warehouse',r:1}];
+const PRODUCTS=[
+ ['Konga Yirgacheffe','Ethiopia','Light','Single origin',22,8.4,7],['Guji Natural','Ethiopia','Light','Single origin',23,9.1,5],
+ ['Huila Excelso','Colombia','Medium','Single origin',19,6.9,8],['Nariño Supremo','Colombia','Medium','Single origin',20,7.3,5],
+ ['Antigua Pastoral','Guatemala','Medium','Single origin',20,7.6,5],['Huehue Highland','Guatemala','Dark','Single origin',19,7.1,3],
+ ['Nyeri AA','Kenya','Light','Single origin',24,10.6,4],['Kirinyaga Peaberry','Kenya','Medium','Single origin',25,11.2,3],
+ ['Cerrado Sweet','Brazil','Medium','Single origin',17,5.6,6],['Mogiana Pulped','Brazil','Dark','Single origin',17,5.9,4],
+ ['Lintong Grade 1','Sumatra','Dark','Single origin',20,7.8,4],['Harbor House','Blend','Medium','Blend',16,5.2,10],
+ ['Night Shift','Blend','Dark','Blend',16,5.0,8],['Morning Ledger','Blend','Light','Blend',17,5.6,6],
+ ['Espresso No. 9','Blend','Dark','Blend',18,5.9,9],['Swiss Water Decaf','Colombia','Medium','Decaf',19,7.9,3],
+ ['Mountain Decaf','Brazil','Dark','Decaf',18,7.0,2],['Cold Brew Coarse','Blend','Dark','Blend',15,4.8,4]
+].map(([name,origin,roast,category,price,cost,pop],id)=>({id,name,origin,roast,category,price,cost,pop}));
+const PW={
+ 'Home':PRODUCTS.map(p=>p.pop*(p.category==='Single origin'?1.25:1)),
+ 'Office':PRODUCTS.map(p=>p.pop*(p.category==='Blend'?1.8:p.roast==='Light'?.6:1)),
+ 'Café partner':PRODUCTS.map(p=>p.pop*(p.name.startsWith('Espresso')?3:p.category==='Blend'?1.7:p.category==='Decaf'?.8:.7))};
+const pickProduct=seg=>pickW(PRODUCTS,PW[seg]);
+const SEAS=[1.0,.92,.97,1.0,1.0,.9,.84,.87,1.0,1.06,1.24,1.42];
+
+const customers=[];
+for(let i=0;i<2400;i++){
+  const signup=i<420?0:Math.floor(END_DAY*Math.pow(rnd(),.75));
+  const segment=pickW(['Home','Office','Café partner'],[.64,.22,.14]);
+  let acquired;
+  if(segment==='Café partner')acquired=rnd()<.85?'Wholesale rep':'Referral';
+  else if(segment==='Home')acquired=pickW(['Organic','Referral','Paid social'],[.38,.22,.40]);
+  else acquired=pickW(['Organic','Referral','Paid social'],[.46,.34,.20]);
+  const r=segment==='Café partner'?pickW([0,1,2,3,4],[.3,.5,.08,.06,.06]):pickW([0,1,2,3,4],[.22,.30,.17,.15,.16]);
+  customers.push({id:i,segment,acquired,r,signup});
+}
+const orders=[],rets=[],subs=[];let oid=0;
+function addOrder(c,d,site,nLines,qlo,qhi,pm,disc){
+  const mi=MO[d],pf=mi>=12?1.06:1,cf=mi>=12?1.13:1,id=oid++,used=new Set();
+  for(let k=0;k<nLines;k++){
+    const p=pickProduct(c.segment);if(used.has(p.id))continue;used.add(p.id);
+    const q=randInt(qlo,qhi),rev=r2(q*p.price*pf*pm*(1-disc)),cogs=q*p.cost*cf;
+    orders.push({o:id,d,mi,c:c.id,p:p.id,s:site,q,rev,gm:r2(rev-cogs)});
+    let pr=.016+(c.acquired==='Paid social'?.03:0)+(p.origin==='Kenya'?.008:0)+(p.name==='Cold Brew Coarse'?.02:0)+(site===3?.006:0);
+    if(c.segment==='Café partner')pr*=.4;
+    if(rnd()<pr){const rd=d+randInt(3,21);if(rd<=END_DAY)rets.push({d:rd,mi:MO[rd],c:c.id,p:p.id,refund:r2(rev*(rnd()<.7?1:.5))});}
+  }
+}
+for(const c of customers){
+  let subStart=null,subEnd=Infinity,plan=null;
+  const subP=c.segment==='Home'?.5:c.segment==='Office'?.25:0;
+  if(rnd()<subP){
+    const sd=c.signup+randInt(0,25);
+    if(sd<=END_DAY){
+      subStart=sd;
+      plan=c.segment==='Home'?pickW(['Weekly','Biweekly','Monthly'],[.18,.47,.35]):pickW(['Weekly','Biweekly','Monthly'],[.5,.35,.15]);
+      subs.push({d:sd,mi:MO[sd],c:c.id,plan,delta:1});
+      const hz=.03+(c.acquired==='Paid social'?.045:0)+(plan==='Weekly'?.012:0);
+      let months=1;while(rnd()>hz&&months<60)months++;
+      const cd=sd+Math.round(months*30.4)+randInt(-10,10);
+      if(cd<=END_DAY&&cd>sd){subEnd=cd;subs.push({d:cd,mi:MO[cd],c:c.id,plan,delta:-1});}
+    }
+  }
+  if(subStart!==null){
+    const step=plan==='Weekly'?7:plan==='Biweekly'?14:30;
+    for(let d=subStart;d<Math.min(subEnd,END_DAY+1);d+=step){if(rnd()<.06)continue;addOrder(c,d,3,rnd()<.2?2:1,1,c.segment==='Office'?3:1,1,.10);}
+  }
+  const base=c.segment==='Home'?(subStart!==null?.12:.38):c.segment==='Office'?1.0:1.6;
+  let first=true;
+  for(let mi=MO[c.signup];mi<MONTHS;mi++){
+    const n=poisson(base*SEAS[mi%12]*(1+mi*.006));
+    const ms=Math.max(mStart(mi),c.signup),me=mStart(mi+1)-1;
+    for(let k=0;k<n;k++){
+      const d=randInt(ms,me);let site,lines,qlo,qhi,pm=1,disc=0;
+      if(c.segment==='Café partner'){site=4;lines=randInt(2,3);qlo=4;qhi=14;pm=.62;}
+      else if(c.segment==='Office'){site=rnd()<.62?3:4;lines=randInt(1,3);qlo=2;qhi=6;pm=site===4?.8:1;}
+      else{const cafe=(c.r===1||c.r===0)?.58:.18;if(rnd()<cafe){site=c.r===0?2:pickW([0,1],[.55,.45]);lines=randInt(1,2);qlo=1;qhi=2;}else{site=3;lines=randInt(1,2);qlo=1;qhi=3;}}
+      if(first&&c.acquired==='Paid social')disc=.2;first=false;
+      addOrder(c,d,site,lines,qlo,qhi,pm,disc);
+    }
+  }
+}
+const inv=[];
+for(let d=5;d<=END_DAY;d+=7){const mi=MO[d];for(const p of PRODUCTS)for(const s of [0,1,2,5]){
+  const base=s===5?60+p.pop*26:3+p.pop*1.4;const season=1+.25*Math.sin(((mi%12)-7)/12*2*Math.PI);
+  let kg=base*season*(.8+rnd()*.4);if(p.origin==='Kenya'&&mi>=15&&mi<=18)kg*=.35;
+  inv.push({d,mi,p:p.id,s,kg:Math.round(kg*10)/10});}}
+
+/* ================================================================
+   2. The Grain Graph: entities persist, events happen, measures carry a contract
+   ================================================================ */
+const ENTITIES={
+ customer:{label:'Customer',rows:customers,links:{region:{to:'region',field:'r',label:'lives in'}},
+   attrs:{segment:{label:'Segment',noun:'segment',type:'nominal'},acquired:{label:'Acquired via',noun:'acquisition channel',type:'nominal'}}},
+ product:{label:'Coffee',rows:PRODUCTS,links:{},
+   attrs:{name:{label:'Coffee',noun:'coffee',type:'nominal'},origin:{label:'Origin',noun:'origin',type:'nominal'},
+          roast:{label:'Roast level',noun:'roast level',type:'ordinal',order:['Light','Medium','Dark']},category:{label:'Category',noun:'category',type:'nominal'}}},
+ site:{label:'Site',rows:SITES,links:{region:{to:'region',field:'r',label:'located in'}},
+   attrs:{name:{label:'Site',noun:'site',type:'nominal'},type:{label:'Site type',noun:'site type',type:'nominal'}}},
+ region:{label:'Region',rows:REGIONS,links:{},attrs:{name:{label:'Region',noun:'region',type:'nominal'}}}
+};
+const EVENTS={
+ order:{label:'Order line',grain:'order line',rows:orders,roles:{customer:{to:'customer',field:'c',label:'bought by'},product:{to:'product',field:'p',label:'of'},site:{to:'site',field:'s',label:'sold at'}},attrs:{}},
+ ret:{label:'Return',grain:'returned line',rows:rets,roles:{customer:{to:'customer',field:'c',label:'returned by'},product:{to:'product',field:'p',label:'of'}},attrs:{}},
+ sub:{label:'Subscription change',grain:'start or cancellation',rows:subs,roles:{customer:{to:'customer',field:'c',label:'for'}},attrs:{plan:{label:'Plan',noun:'plan',type:'ordinal',order:['Weekly','Biweekly','Monthly']}}},
+ inv:{label:'Inventory count',grain:'weekly count of one coffee at one site',rows:inv,roles:{product:{to:'product',field:'p',label:'of'},site:{to:'site',field:'s',label:'held at'}},attrs:{}}
+};
+const MEASURES={
+ revenue:{label:'Revenue',event:'order',agg:'sum',v:r=>r.rev,unit:'usd',kind:'additive',good:'up',def:'Line revenue after discounts'},
+ margin:{label:'Gross margin',event:'order',agg:'sum',v:r=>r.gm,unit:'usd',kind:'additive',good:'up',def:'Revenue minus cost of goods'},
+ marginPct:{label:'Margin %',agg:'ratio',num:'margin',den:'revenue',unit:'pct',kind:'ratio',good:'up',def:'Gross margin ÷ Revenue'},
+ bags:{label:'Bags sold',event:'order',agg:'sum',v:r=>r.q,unit:'count',kind:'additive',good:'up',def:'340 g bags'},
+ orders:{label:'Orders',event:'order',agg:'distinct',v:r=>r.o,unit:'count',kind:'distinct',good:'up',def:'An order with three lines counts once'},
+ customers:{label:'Buying customers',event:'order',agg:'distinct',v:r=>r.c,unit:'count',kind:'distinct',good:'up',def:'People with at least one order line'},
+ aov:{label:'Avg order value',agg:'ratio',num:'revenue',den:'orders',unit:'usd',kind:'ratio',good:'up',def:'Revenue ÷ Orders'},
+ refunds:{label:'Refunds',event:'ret',agg:'sum',v:r=>r.refund,unit:'usd',kind:'additive',good:'down',def:'Money returned to customers'},
+ returnRate:{label:'Return rate',agg:'ratio',num:'refunds',den:'revenue',unit:'pct',kind:'ratio',good:'down',def:'Refunds ÷ Revenue, across two events'},
+ starts:{label:'New subscriptions',event:'sub',agg:'sum',v:r=>r.delta>0?1:0,unit:'count',kind:'additive',good:'up',def:'Subscription starts'},
+ cancels:{label:'Cancellations',event:'sub',agg:'sum',v:r=>r.delta<0?1:0,unit:'count',kind:'additive',good:'down',def:'Subscription cancellations'},
+ activeSubs:{label:'Active subscribers',event:'sub',agg:'balance',v:r=>r.delta,unit:'count',kind:'balance',good:'up',def:'Starts minus cancels, read at period end'},
+ onHand:{label:'Inventory on hand',event:'inv',agg:'snapshot',v:r=>r.kg,unit:'kg',kind:'balance',good:null,def:'Last weekly count in the period'}
+};
+const KIND_WORD={additive:'adds up',balance:'balance',ratio:'ratio',distinct:'distinct'};
+const UNIT_SIGN={usd:'$',pct:'%',kg:'kg',count:'#'};
+const ATTRS={};
+for(const [n,e] of Object.entries(ENTITIES))for(const [a,d] of Object.entries(e.attrs))ATTRS[n+'.'+a]={...d,node:n,field:a,values:[...new Set(e.rows.map(r=>r[a]))]};
+for(const [n,e] of Object.entries(EVENTS))for(const [a,d] of Object.entries(e.attrs))ATTRS[n+'.'+a]={...d,node:n,field:a,values:[...new Set(e.rows.map(r=>r[a]))]};
+ATTRS['time.month']={label:'Month',noun:'month',type:'time',node:'time'};
+ATTRS['time.quarter']={label:'Quarter',noun:'quarter',type:'time',node:'time'};
+for(const a of Object.values(ATTRS))if(a.order)a.values=a.order.slice();else if(a.values)a.values.sort();
+const nodeLabel=n=>(ENTITIES[n]||EVENTS[n]).label;
+
+/* ================================================================
+   3. Engine: every measure aggregates at its own event's grain, then walks the graph
+   ================================================================ */
+const SEP='\u0001';
+function findPaths(ev,target){
+  if(ev===target)return [[]];
+  const out=[];
+  const walk=(node,path,seen)=>{
+    if(path.length>=3)return;
+    const src=node===ev?EVENTS[ev].roles:(ENTITIES[node].links||{});
+    for(const [key,e] of Object.entries(src)){
+      if(seen.has(e.to))continue;
+      const step={from:node,key,to:e.to,field:e.field,label:e.label},np=[...path,step];
+      if(e.to===target)out.push(np);else walk(e.to,np,new Set([...seen,e.to]));
+    }
+  };
+  walk(ev,[],new Set([ev]));
+  return out.sort((a,b)=>a.length-b.length);
+}
+const pathKey=p=>p.map(s=>s.to).join('>');
+const pathText=(ev,p)=>p.length?nodeLabel(ev)+' '+p.map(s=>'—'+s.label+'→ '+nodeLabel(s.to)).join(' '):nodeLabel(ev)+' (on the event itself)';
+const viaName=via=>via?nodeLabel(via.split('>')[0]).toLowerCase():'';
+function resolveAttr(ev,spec){
+  const a=ATTRS[spec.attr];const paths=findPaths(ev,a.node);
+  if(!paths.length)return {err:'nopath'};
+  let path=paths[0];
+  if(spec.via){const f=paths.find(p=>pathKey(p)===spec.via);if(!f)return {err:'novia',paths};path=f;}
+  const fld=a.field;
+  const get=row=>{let cur=row;for(const s of path)cur=ENTITIES[s.to].rows[cur[s.field]];return cur[fld];};
+  return {get,path,paths};
+}
+function periodsOf(frame,grain){const out=[];if(grain==='quarter'){for(let q=Math.floor(frame.m0/3);q<=Math.floor(frame.m1/3);q++)out.push(q);}else for(let m=frame.m0;m<=frame.m1;m++)out.push(m);return out;}
+const periodEnd=(p,grain,frame)=>Math.min(grain==='quarter'?p*3+2:p,frame.m1);
+const CACHE=new Map();
+function run(mid,slices,filters,frame){
+  const ck=JSON.stringify([mid,slices,filters,frame]);
+  if(CACHE.has(ck))return CACHE.get(ck);
+  const res=run0(mid,slices,filters,frame);CACHE.set(ck,res);return res;
+}
+function run0(mid,slices,filters,frame){
+  const m=MEASURES[mid];
+  if(m.agg==='ratio'){
+    const a=run(m.num,slices,filters,frame),b=run(m.den,slices,filters,frame);
+    const issues=[...a.issues];for(const x of b.issues)if(!issues.some(y=>y.kind===x.kind&&y.attr===x.attr&&y.event===x.event))issues.push(x);
+    const res={mid,issues,parts:[a,b],blocked:a.blocked||b.blocked,cells:new Map()};
+    if(!res.blocked)for(const [k,den] of b.cells)if(den>0)res.cells.set(k,(a.cells.get(k)||0)/den);
+    return res;
+  }
+  const ev=EVENTS[m.event],issues=[],plan={slices:[],filters:[]};
+  const getters=[];let tIdx=-1,grain=null;
+  slices.forEach((s,i)=>{
+    if(ATTRS[s.attr].type==='time'){tIdx=i;grain=s.attr.slice(5);getters.push(null);plan.slices.push({spec:s,time:true});return;}
+    const r=resolveAttr(m.event,s);
+    if(r.err){issues.push({kind:'slice',attr:s.attr,via:s.via,event:m.event,err:r.err,mid});getters.push(null);}
+    else{getters.push(r.get);plan.slices.push({spec:s,path:r.path,alts:r.paths});}
+  });
+  if(issues.length)return {mid,blocked:true,issues,plan,cells:new Map()};
+  const fs=[];
+  for(const f of filters){
+    const r=resolveAttr(m.event,f);
+    if(r.err){issues.push({kind:'filter',attr:f.attr,via:f.via,event:m.event,err:r.err,mid,values:f.values});continue;}
+    const set=new Set(f.values);fs.push(row=>set.has(r.get(row)));plan.filters.push({spec:f,path:r.path});
+  }
+  const pass=row=>{for(const f of fs)if(!f(row))return false;return true;};
+  const tOf=mi=>grain==='quarter'?Math.floor(mi/3):mi;
+  const keyOf=(row,t)=>{const parts=[];for(let i=0;i<getters.length;i++)parts.push(i===tIdx?t:getters[i](row));return parts.join(SEP);};
+  const cells=new Map(),v=m.v,{m0,m1}=frame,rows=ev.rows;
+  if(m.agg==='sum'||m.agg==='distinct'){
+    for(const row of rows){
+      if(row.mi<m0||row.mi>m1||!pass(row))continue;
+      const k=keyOf(row,tIdx>=0?tOf(row.mi):null);
+      if(m.agg==='sum')cells.set(k,(cells.get(k)||0)+v(row));
+      else{let s=cells.get(k);if(!s){s=new Set();cells.set(k,s);}s.add(v(row));}
+    }
+    if(m.agg==='distinct')for(const [k,s] of cells)cells.set(k,s.size);
+  }else if(m.agg==='balance'){
+    const buck=new Map();
+    for(const row of rows){
+      if(row.mi>m1||!pass(row))continue;
+      const k=keyOf(row,'\u0000');let a=buck.get(k);if(!a){a=new Float64Array(MONTHS);buck.set(k,a);}a[row.mi]+=v(row);
+    }
+    for(const [k,a] of buck){
+      const cum=new Float64Array(MONTHS);let s=0;for(let i=0;i<=m1;i++){s+=a[i];cum[i]=s;}
+      if(tIdx<0)cells.set(k,cum[m1]);
+      else for(const p of periodsOf(frame,grain))cells.set(k.replace('\u0000',String(p)),cum[periodEnd(p,grain,frame)]);
+    }
+    plan.balance=true;
+  }else if(m.agg==='snapshot'){
+    const last=new Map();
+    for(const row of rows){if(row.mi<m0||row.mi>m1)continue;const p=tIdx>=0?tOf(row.mi):'all';if(!(last.get(p)>=row.d))last.set(p,row.d);}
+    for(const row of rows){
+      if(row.mi<m0||row.mi>m1||!pass(row))continue;
+      const p=tIdx>=0?tOf(row.mi):'all';if(last.get(p)!==row.d)continue;
+      const k=keyOf(row,tIdx>=0?p:null);cells.set(k,(cells.get(k)||0)+v(row));
+    }
+    plan.snapshot=[...last.values()];
+  }
+  return {mid,cells,issues,plan,blocked:false};
+}
+
+/* ================================================================
+   4. Formatting
+   ================================================================ */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmt(unit,v,full){
+  if(v==null||!isFinite(v))return '–';
+  const a=Math.abs(v);
+  if(unit==='usd'){
+    if(full)return '$'+Math.round(v).toLocaleString('en-US');
+    if(a>=1e6)return '$'+(v/1e6).toFixed(a>=1e7?1:2)+'M';
+    if(a>=1e4)return '$'+Math.round(v/1e3)+'K';
+    if(a>=1e3)return '$'+(v/1e3).toFixed(1)+'K';
+    return '$'+(a<100?v.toFixed(2):Math.round(v));
+  }
+  if(unit==='pct')return (v*100).toFixed(a<.1?2:1)+'%';
+  if(unit==='kg'){if(!full&&a>=1e4)return (v/1e3).toFixed(1)+'t';return Math.round(v).toLocaleString('en-US')+' kg';}
+  if(!full&&a>=1e5)return (v/1e3).toFixed(0)+'K';
+  return Math.round(v).toLocaleString('en-US');
+}
+function niceTicks(lo,hi,n){
+  if(hi===lo){hi=lo+1;}
+  const span=hi-lo,step0=span/Math.max(1,n),mag=Math.pow(10,Math.floor(Math.log10(step0))),err=step0/mag;
+  const step=(err>=7.5?10:err>=3.5?5:err>=1.5?2:1)*mag;
+  const a=Math.floor(lo/step)*step,b=Math.ceil(hi/step)*step,t=[];
+  for(let x=a;x<=b+step*1e-6;x+=step)t.push(+x.toFixed(10));
+  return t;
+}
+const FRAMES={l12:{m0:10,m1:21,label:'last 12 months'},y26:{m0:12,m1:21,label:'2026 to date'},y25:{m0:0,m1:11,label:'2025'},all:{m0:0,m1:21,label:'all time'}};
+const frameRange=f=>mLong(f.m0)+' to '+mLong(f.m1);
+const SERIES=['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
+const timeLabel=(grain,p)=>grain==='quarter'?qLabel(+p):mShort(+p);
+const timeLong=(grain,p)=>grain==='quarter'?qLabel(+p):mLong(+p);
+
+
+/* ================================================================
+   Shared helpers
+   ================================================================ */
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function hexRgb(h){h=(h||'#888').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mixHex(a,b,t){const x=hexRgb(a),y=hexRgb(b);return 'rgb('+x.map((v,i)=>Math.round(v*(1-t)+y[i]*t)).join(',')+')';}
+const rgba=(h,a)=>{const x=hexRgb(h);return `rgba(${x[0]},${x[1]},${x[2]},${a})`;};
+let COL={};
+function readCols(){COL={bg:css('--bg'),panel:css('--panel'),void:css('--void'),ink:css('--ink'),ink2:css('--ink2'),ink3:css('--ink3'),rule:css('--rule'),s1:css('--s1'),s3:css('--s3'),glass:css('--glass'),accent:css('--accent')};}
+readCols();
+const F_UI='"Instrument Sans","Helvetica Neue",Arial,sans-serif',F_DISP='"Newsreader","Iowan Old Style",Georgia,serif',F_MONO='"JetBrains Mono",ui-monospace,Menlo,monospace';
+const tip=document.getElementById('tip');
+function showTip(html,x,y){tip.innerHTML=html;tip.classList.add('on');const r=tip.getBoundingClientRect();let px=x+14,py=y+14;if(px+r.width>innerWidth-8)px=x-r.width-14;if(py+r.height>innerHeight-8)py=y-r.height-14;tip.style.left=px+'px';tip.style.top=py+'px';}
+const hideTip=()=>tip.classList.remove('on');
+const reduced=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(_){return false;}};
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const now=()=>performance.now();
+function fitCanvas(cv){const r=cv.getBoundingClientRect();const W=Math.max(300,Math.round(r.width||cv.parentNode.clientWidth||900)),H=Math.max(300,Math.round(r.height||600));const dpr=Math.min(2,window.devicePixelRatio||1);if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,W,H,S:Math.min(W,H)};}
+const dstr=d=>{const t=new Date(D0+d*DAY);return MLAB[t.getUTCMonth()]+' '+t.getUTCDate();};
+const dlong=d=>{const t=new Date(D0+d*DAY);return MLAB[t.getUTCMonth()]+' '+t.getUTCDate()+', '+t.getUTCFullYear();};
+const pct0=v=>Math.round(v*100)+'%';
+const pctS=(v,d=1)=>(v*100).toFixed(d)+'%';
+const usd0=v=>v===0?'$0':fmt('usd',v);
+function relWord(a,b){if(!a)return '';const r=(b-a)/Math.abs(a);if(Math.abs(r)<.005)return 'flat on';return (r>0?'up ':'down ')+Math.abs(r*100).toFixed(Math.abs(r)<.1?1:0)+'% on';}
+function grainTexture(){
+  try{const c=document.createElement('canvas');c.width=c.height=180;const g=c.getContext('2d');const im=g.createImageData(180,180);const R=mulberry32(77);
+    for(let i=0;i<im.data.length;i+=4){const v=R();const dark=matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!=='light';const on=v>.5;const L=dark?255:0;im.data[i]=im.data[i+1]=im.data[i+2]=L;im.data[i+3]=on?Math.round((v-.5)*2*(dark?22:30)):0;}
+    g.putImageData(im,0,0);const url=c.toDataURL();document.querySelectorAll('.grain').forEach(e=>e.style.backgroundImage=`url(${url})`);}catch(_){}
+}
+function crumbs(el,items,onPick){
+  el.innerHTML=items.map((it,i)=>(i?'<span class="crumb-sep">›</span>':'')+`<button class="crumb" data-i="${i}" title="${esc(it)}">${esc(it)}</button>`).join('');
+  el.onclick=e=>{const b=e.target.closest('.crumb');if(b)onPick(+b.dataset.i);};
+}
+function scaleHtml(k){const e=Math.log10(Math.max(1,k));return `×10<sup>${e.toFixed(1)}</sup>`;}
+
+/* ================================================================
+   Contribution engine (shared by Descent and Sky)
+   Every split is exact: the pieces add up to the change above them.
+   ================================================================ */
+ATTRS['customer.id']={label:'Customer',noun:'customer',type:'nominal',node:'customer',field:'id'};
+const DLAB=k=>k==='region.name'?'Customer region':k==='pair'?'Coffee at site':k==='customer.id'?'Customer':ATTRS[k].label;
+const GETC=new Map();
+function getterFor(ev,dim){
+  const key=ev+'|'+dim;if(GETC.has(key))return GETC.get(key);
+  let g=null;
+  if(dim==='pair')g=ev==='inv'?(r=>PRODUCTS[r.p].name+' at '+SITES[r.s].name):null;
+  else if(ATTRS[dim]){const r=resolveAttr(ev,specOf(dim));g=r.err?null:r.get;}
+  GETC.set(key,g);return g;
+}
+const specOf=attr=>attr==='region.name'?{attr,via:'customer>region'}:{attr};
+const CUST_DIMS=['customer.segment','customer.acquired','region.name'];
+const PROD_DIMS=['product.category','product.origin','product.roast','product.name'];
+const SITE_DIMS=['site.type','site.name'];
+function dimsFor(mid){
+  if(mid==='customers')return CUST_DIMS;
+  if(mid==='orders'||mid==='aov')return [...CUST_DIMS,...SITE_DIMS];
+  if(mid==='onHand')return [...PROD_DIMS,...SITE_DIMS];
+  if(['starts','cancels','activeSubs'].includes(mid))return [...CUST_DIMS,'sub.plan',...PROD_DIMS.slice(0,1),...SITE_DIMS.slice(0,1)];
+  return [...CUST_DIMS,...PROD_DIMS,...SITE_DIMS];
+}
+const recDim=mid=>{const ev=MEASURES[mid].event||MEASURES[MEASURES[mid].num].event;return ev==='inv'?'pair':'customer.id';};
+const eventsOf=mid=>{const m=MEASURES[mid];return m.agg==='ratio'?[...new Set([...eventsOf(m.num),...eventsOf(m.den)])]:[m.event];};
+function blockedWhy(mid,dim){
+  for(const ev of eventsOf(mid))if(!getterFor(ev,dim)){const a=ATTRS[dim];return `${EVENTS[ev].label} has no road to ${a&&ENTITIES[a.node]?ENTITIES[a.node].label.toLowerCase():DLAB(dim).toLowerCase()} in the graph, so ${MEASURES[mid].label.toLowerCase()} can't be split this way.`;}
+  return null;
+}
+/* base aggregate of a non-ratio measure, by category, in a window of months */
+function agg(mid,win,filters,dim){
+  const m=MEASURES[mid],ev=m.event,rows=EVENTS[ev].rows;
+  const g=dim?getterFor(ev,dim):(()=>'');if(!g)return null;
+  const fs=[];for(const f of filters){const fg=getterFor(ev,f.dim);if(!fg)return null;fs.push([fg,f.value]);}
+  const pass=r=>{for(let i=0;i<fs.length;i++)if(fs[i][0](r)!==fs[i][1])return false;return true;};
+  const out=new Map(),[m0,m1]=win,v=m.v;
+  if(m.agg==='sum'){for(const r of rows){if(r.mi<m0||r.mi>m1||!pass(r))continue;const k=g(r);out.set(k,(out.get(k)||0)+v(r));}}
+  else if(m.agg==='distinct'){const sets=new Map();for(const r of rows){if(r.mi<m0||r.mi>m1||!pass(r))continue;const k=g(r);let s=sets.get(k);if(!s){s=new Set();sets.set(k,s);}s.add(v(r));}for(const [k,s] of sets)out.set(k,s.size);}
+  else if(m.agg==='balance'){for(const r of rows){if(r.mi>m1||!pass(r))continue;const k=g(r);out.set(k,(out.get(k)||0)+v(r));}}
+  else if(m.agg==='snapshot'){let last=-1;for(const r of rows)if(r.mi>=m0&&r.mi<=m1&&r.d>last)last=r.d;for(const r of rows){if(r.d!==last||!pass(r))continue;const k=g(r);out.set(k,(out.get(k)||0)+v(r));}}
+  return out;
+}
+const tot=mp=>{let s=0;for(const v of mp.values())s+=v;return s;};
+const CC=new Map();
+/* K = {mid, A:[m0,m1], B:[m0,m1]}. Returns per-category contributions that sum exactly to the change. */
+function contrib(K,dim,filters){
+  const key=JSON.stringify([K.mid,K.A,K.B,dim,filters]);if(CC.has(key))return CC.get(key);
+  const m=MEASURES[K.mid];let res;
+  if(m.agg!=='ratio'){
+    const a=agg(K.mid,K.A,filters,dim),b=agg(K.mid,K.B,filters,dim);
+    if(!a||!b)res={blocked:true};
+    else{const cats=new Set([...a.keys(),...b.keys()]);const items=[];for(const c of cats){const x=a.get(c)||0,y=b.get(c)||0;items.push({cat:c,c:y-x,a:x,b:y});}
+      res={items,A:tot(a),B:tot(b),total:tot(b)-tot(a),ratio:false};}
+  }else{
+    const nA=agg(m.num,K.A,filters,dim),dA=agg(m.den,K.A,filters,dim),nB=agg(m.num,K.B,filters,dim),dB=agg(m.den,K.B,filters,dim);
+    if(!nA||!dA||!nB||!dB)res={blocked:true};
+    else{
+      const DA=tot(dA),DB=tot(dB),rA=DA?tot(nA)/DA:0,rB=DB?tot(nB)/DB:0;
+      const cats=new Set([...dA.keys(),...dB.keys()]);const items=[];
+      for(const c of cats){const da=dA.get(c)||0,db=dB.get(c)||0,wA=DA?da/DA:0,wB=DB?db/DB:0;
+        const rAc=da>0?(nA.get(c)||0)/da:rA,rBc=db>0?(nB.get(c)||0)/db:rAc;
+        const mix=(wB-wA)*(rAc-rA),within=wB*(rBc-rAc);
+        items.push({cat:c,c:mix+within,mix,within,wA,wB,a:rAc,b:rBc,denA:da,denB:db});}
+      res={items,A:rA,B:rB,total:rB-rA,ratio:true};
+    }
+  }
+  if(!res.blocked)res.items.sort((x,y)=>Math.abs(y.c)-Math.abs(x.c));
+  CC.set(key,res);return res;
+}
+/* the split that explains the most: the largest single same-direction piece, as a share of the change */
+function rankSplits(K,filters,exclude){
+  const out=[],dead=[];
+  for(const dim of dimsFor(K.mid)){
+    if(exclude.includes(dim))continue;
+    const why=blockedWhy(K.mid,dim);if(why){dead.push({dim,why});continue;}
+    const r=contrib(K,dim,filters);if(r.blocked){dead.push({dim,why:'No road.'});continue;}
+    const live=r.items.filter(i=>Math.abs(i.c)>1e-12);if(live.length<2)continue;
+    const T=r.total,absSum=live.reduce((s,i)=>s+Math.abs(i.c),0);
+    const sgn=Math.sign(T)||1,top=Math.max(...live.map(i=>i.c*sgn));
+    const score=Math.abs(T)>absSum*.05?top/Math.abs(T):Math.max(...live.map(i=>Math.abs(i.c)))/absSum;
+    out.push({dim,res:r,score});
+  }
+  out.sort((a,b)=>b.score-a.score);
+  return {ranked:out,dead};
+}
+function fmtD(mid,v){const u=MEASURES[mid].unit;const s=v>=0?'+':'−';
+  if(u==='pct'){const p=Math.abs(v*100);return s+p.toFixed(p<.1?3:p<1?2:1)+' pts';}
+  if(u==='usd'){const a=Math.abs(v);return s+(a<1000?'$'+(a<100?a.toFixed(a<10?2:1):Math.round(a)):fmt('usd',a));}
+  return s+fmt(u,Math.abs(v));}
+const helps=(mid,v)=>{const g=MEASURES[mid].good;return g==null?null:(v>0)===(g==='up');};
+function custLine(id){const c=customers[id];return `${c.segment} · ${c.acquired} · ${REGIONS[c.r].name}`;}
+const catName=(dim,cat)=>dim==='customer.id'?'Customer #'+cat:String(cat);
+
+
+
+/* ================================================================
+   Descent
+   ================================================================ */
+const CMP={
+  ytd:{A:[0,9],B:[12,21]},
+  yoy:{A:[7,9],B:[19,21]},
+  qoq:{A:[16,18],B:[19,21]}
+};
+const KPIS=['revenue','margin','marginPct','aov','orders','customers','bags','returnRate','refunds','activeSubs','cancels','onHand'];
+const isLevel=mid=>['balance','snapshot'].includes(MEASURES[mid].agg)||MEASURES[mid].kind==='balance';
+function winLabel(mid,w){if(isLevel(mid))return 'the end of '+mLong(w[1]);const y0=2025+Math.floor(w[0]/12),y1=2025+Math.floor(w[1]/12);return y0===y1?`${MLAB[w[0]%12]} to ${MLAB[w[1]%12]} ${y1}`:`${mLong(w[0])} to ${mLong(w[1])}`;}
+const DS={kpi:'marginPct',cmp:'ytd',floors:[],anim:null,hover:null,sel:0,auto:false,autoT:null};
+const K=()=>{const c=CMP[DS.cmp];return {mid:DS.kpi,A:c.A,B:c.B};};
+const cv=document.getElementById('cv'),vp=document.getElementById('vp');
+const FS=150,SHR=.8,MAXB=9,MAXROWS=60;
+const dsCur=()=>DS.floors[DS.floors.length-1];
+
+/* ---------- the surface ---------- */
+function surface(){
+  const el=document.getElementById('surface');
+  el.innerHTML=KPIS.map(mid=>{
+    const m=MEASURES[mid],k={mid,A:CMP[DS.cmp].A,B:CMP[DS.cmp].B},r=contrib(k,null,[]);
+    const h=helps(mid,r.total),col=Math.abs(r.total)<1e-12||h==null?'var(--glass)':h?'var(--s1)':'var(--s3)';
+    const s=run(mid,[{attr:'time.month'}],[],FRAMES.all),vals=[];for(let i=0;i<MONTHS;i++)vals.push(s.cells.get(String(i))??null);
+    const ok=vals.filter(v=>v!=null),lo=Math.min(...ok),hi=Math.max(...ok),W=100,H=20;
+    const xs=i=>i/(MONTHS-1)*W,ys=v=>H-(hi>lo?(v-lo)/(hi-lo):.5)*H;
+    const pts=vals.map((v,i)=>v==null?null:`${xs(i).toFixed(1)},${ys(v).toFixed(1)}`).filter(Boolean).join(' ');
+    const band=(w,op)=>`<rect x="${xs(w[0]).toFixed(1)}" y="-2" width="${Math.max(1.5,xs(w[1])-xs(w[0])).toFixed(1)}" height="${H+4}" fill="var(--ink)" opacity="${op}"/>`;
+    return `<button class="tile" data-mid="${mid}" aria-pressed="${mid===DS.kpi}"><span class="l">${esc(m.label)}</span><span class="v">${fmt(m.unit,r.B)}</span><span class="d"><i style="background:${col}"></i>${fmtD(mid,r.total)}</span>
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${band(k.A,.05)}${band(k.B,.09)}<polyline points="${pts}" fill="none" stroke="var(--ink3)" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>`;
+  }).join('');
+}
+document.getElementById('surface').addEventListener('click',e=>{const b=e.target.closest('.tile');if(!b)return;stopAuto();DS.kpi=b.dataset.mid;surface();dsReset();});
+document.getElementById('cmp').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;stopAuto();DS.cmp=b.dataset.v;document.querySelectorAll('#cmp button').forEach(x=>x.classList.toggle('on',x===b));surface();dsReset();});
+
+/* ---------- floors ---------- */
+function makeFloor(filters,mult,mixC,mixName,parentC){
+  const used=filters.map(f=>f.dim);
+  const {ranked,dead}=rankSplits(K(),filters,used);
+  const fl={kind:'split',filters,mult,mixC,mixName,parentC,ranked,dead,dim:ranked[0]?ranked[0].dim:null,items:[],total:0,pickIdx:null};
+  buildFloor(fl,ranked[0]);return fl;
+}
+function finishItems(fl){
+  /* the mix share always stays its own block, however thin, so every floor adds up exactly */
+  if(fl.mixC&&Math.abs(fl.mixC)>1e-12)fl.items.push({kind:'mix',cat:fl.mixName,c:fl.mixC,tiny:Math.abs(fl.mixC)<Math.abs(fl.parentC==null?fl.mixC:fl.parentC)*.02});
+  fl.total=fl.items.reduce((s,i)=>s+i.c,0);
+  const sg=Math.sign(fl.total)||1;
+  fl.items.sort((a,b)=>{const ra=a.kind==='mix'?2:a.kind==='other'?1:0,rb=b.kind==='mix'?2:b.kind==='other'?1:0;const sa=Math.sign(a.c)===sg?0:1,sb=Math.sign(b.c)===sg?0:1;return sa-sb||ra-rb||Math.abs(b.c)-Math.abs(a.c);});
+}
+function buildFloor(fl,pick){
+  fl.items=[];
+  if(pick){
+    const live=pick.res.items.filter(i=>Math.abs(i.c)>1e-12),top=live.slice(0,MAXB),rest=live.slice(MAXB);
+    for(const it of top)fl.items.push({kind:'cat',cat:it.cat,c:it.c*fl.mult,raw:it});
+    if(rest.length)fl.items.push({kind:'other',cat:`${rest.length} smaller pieces`,c:rest.reduce((a,i)=>a+i.c,0)*fl.mult,n:rest.length});
+    fl.res=pick.res;
+  }else if(fl.parentC!=null){
+    /* nothing left to split by: the piece stays whole, and the only way on is down to the rows */
+    const last=fl.filters[fl.filters.length-1];fl.items.push({kind:'whole',cat:catName(last.dim,last.value),c:fl.parentC-(fl.mixC||0)});
+  }
+  finishItems(fl);
+  DS.sel=Math.max(0,fl.items.findIndex(i=>i.kind==='cat'));
+}
+function rowsFloor(par){
+  const rd=recDim(DS.kpi),r=contrib(K(),rd,par.filters);
+  const fl={kind:'rows',filters:par.filters,mult:par.mult,mixC:par.items.filter(i=>i.kind==='mix').reduce((s,i)=>s+i.c,0),mixName:'',parentC:par.total,ranked:[],dead:[],dim:rd,items:[],total:0,pickIdx:null};
+  fl.mixName=(par.items.find(i=>i.kind==='mix')||{}).cat||'';
+  if(!r.blocked){const live=r.items.filter(i=>Math.abs(i.c)>1e-12);fl.nRows=live.length;
+    for(const it of live.slice(0,MAXROWS))fl.items.push({kind:'cat',cat:it.cat,c:it.c*fl.mult,raw:it,row:true});
+    const rest=live.slice(MAXROWS);if(rest.length)fl.items.push({kind:'other',cat:`${fmt('count',rest.length)} more`,c:rest.reduce((a,i)=>a+i.c,0)*fl.mult,n:rest.length});}
+  finishItems(fl);DS.sel=-1;
+  return fl;
+}
+function dsReset(){stopAuto();DS.floors=[makeFloor([],1,0,'',null)];DS.anim=null;all();}
+function all(){draw();narrate();chips();story();recs();hud();}
+
+/* ---------- geometry ---------- */
+function geom(){const {ctx,W,H}=fitCanvas(cv);const gauge=W<640?0:170;const pad=W<640?16:40;const sw=W-gauge-pad*2;return {ctx,W,H,pad,gauge,sw,cx:pad+sw/2,bh:W<640?40:54,baseY:Math.round(H*.48)};}
+const yAt=(G,d)=>d>=0?G.baseY-FS*(1-Math.pow(SHR,d))/(1-SHR):G.baseY-d*FS*1.25;
+const sAt=d=>Math.pow(SHR,Math.max(0,d));
+function rectAt(G,d){const s=sAt(d),w=G.sw*s,h=G.bh*s;return {x:G.cx-w/2,y:yAt(G,Math.max(0,d)),w,h};}
+function blocks(fl,x,w){const abs=fl.items.reduce((s,i)=>s+Math.abs(i.c),0)||1,n=fl.items.length,gap=fl.kind==='rows'?1:2,avail=w-gap*Math.max(0,n-1);let cx=x;
+  return fl.items.map(it=>{const bw=Math.max(fl.kind==='rows'?1:1.5,avail*Math.abs(it.c)/abs);const r={it,x:cx,w:bw};cx+=bw+gap;return r;});}
+function colorOf(it){const h=helps(DS.kpi,it.c);const base=h==null?COL.glass:h?COL.s1:COL.s3;if(it.kind==='other')return mixHex(COL.void,base,.5);if(it.kind==='mix')return mixHex(COL.void,base,.42);return base;}
+function roundRect(ctx,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+const withA=(c,a)=>c.startsWith('rgb(')?c.replace('rgb(','rgba(').replace(')',','+a+')'):rgba(c,a);
+
+/* ---------- words ---------- */
+function headOf(fl){
+  const k=K(),mid=k.mid,m=MEASURES[mid],f0=DS.floors[0];
+  if(fl===f0){const dir=fl.total>=0?'rose':'fell';return {h:Math.abs(fl.total)<1e-12?`${m.label} held still`:`${m.label} ${dir} ${fmtD(mid,fl.total).slice(1)}`,s:`${fmt(m.unit,f0.res.A)} at ${winLabel(mid,k.A)} · ${fmt(m.unit,f0.res.B)} at ${winLabel(mid,k.B)}`.replace(/ at (?!the end)/g,' in ')};}
+  if(fl.kind==='rows'){const n=fl.nRows||0;return {h:`The rows: ${fmt('count',n)} ${rowNoun(n)}`,s:`each mark is one, and its width is how much it moved ${m.label.toLowerCase()}`};}
+  const last=fl.filters[fl.filters.length-1];
+  return {h:`${catName(last.dim,last.value)}: ${fmtD(mid,fl.total)}`,s:`of the ${fmtD(mid,f0.total)}`+(fl.dim?` · split by ${DLAB(fl.dim).toLowerCase()}`:' · nothing splits it further')};
+}
+const rowNoun=n=>recDim(DS.kpi)==='pair'?(n===1?'coffee at a site':'coffee-and-site counts'):(n===1?'customer':'customers');
+function itemName(fl,it){if(it.kind!=='cat')return it.cat;return catName(fl.dim,it.cat);}
+function rowStory(it,mid){
+  const m=MEASURES[mid],r=it.raw,k=K();
+  let v;
+  if(m.agg==='ratio')v=r.denA>0?`${fmt(m.unit,r.a)} → ${fmt(m.unit,r.b)}`:`new: ${fmt(m.unit,r.b)}`;
+  else if(m.agg==='distinct'&&mid==='customers')v=`${r.a?'bought':'didn\'t buy'} in ${winLabel(mid,k.A)}, ${r.b?'bought':'didn\'t buy'} in ${winLabel(mid,k.B)}`;
+  else if(mid==='activeSubs')v=`${r.a>0?'subscribed':'not subscribed'} at ${winLabel(mid,k.A)}, ${r.b>0?'subscribed':'not'} at ${winLabel(mid,k.B)}`;
+  else v=`${fmt(m.unit,r.a)} → ${fmt(m.unit,r.b)}`;
+  return v;
+}
+
+/* ---------- drawing ---------- */
+function curDepth(){const n=DS.floors.length,a=DS.anim,t=a?ease(a.t):1;if(a&&a.dir>0)return n-2+t;if(a&&a.dir<0)return n-1+(1-t);return n-1;}
+function draw(){
+  const G=geom(),{ctx,W,H}=G;ctx.fillStyle=COL.void;ctx.fillRect(0,0,W,H);
+  const cur=curDepth();
+  /* the walls narrow upward; strata on them scroll past as you fall */
+  ctx.lineWidth=1;
+  for(const side of [-1,1]){ctx.strokeStyle=rgba(COL.ink,.10);ctx.beginPath();for(let d=-2.2;d<=9;d+=.1){const s=sAt(d),x=G.cx+side*(G.sw*s/2+18*s),y=yAt(G,d);d<=-2.15?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}
+  for(let k=Math.floor((cur-9)*4);k<=Math.ceil((cur+2.4)*4);k++){const d=cur-k/4;if(d<-2.2||d>9)continue;const s=sAt(d),y=yAt(G,d),len=(k%4===0?14:6)*s;ctx.strokeStyle=rgba(COL.ink,k%4===0?.16:.08);
+    for(const side of [-1,1]){const x=G.cx+side*(G.sw*s/2+18*s);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+side*len,y);ctx.stroke();}}
+  const n=DS.floors.length,a=DS.anim;
+  const list=DS.floors.map((fl,i)=>({fl,i,d:cur-i}));
+  if(a&&a.dir<0)list.push({fl:a.gone,i:n,d:cur-n});
+  /* beams first, then floors over them */
+  const rects=new Map();
+  for(const L of list){
+    let rect=rectAt(G,L.d),alpha=clamp(1-.24*Math.max(0,L.d),.16,1),textA=1;
+    if(L.d<0){const par=L.i===n?DS.floors[n-1]:DS.floors[L.i-1];const pr=rectAt(G,L.d+1);const pb=pickRect(par,pr);
+      const u=1+L.d;const from={x:pb.x,y:pr.y+pr.h+FS*.32,w:pb.w,h:pr.h*.9},to=rectAt(G,0);
+      rect={x:from.x+(to.x-from.x)*u,y:from.y+(to.y-from.y)*u,w:from.w+(to.w-from.w)*u,h:from.h+(to.h-from.h)*u};textA=clamp((u-.5)/.5,0,1);alpha=clamp(.35+u,0,1);}
+    rects.set(L.fl,{rect,alpha,textA,d:L.d});
+  }
+  for(const L of list){if(L.i===0)continue;const par=DS.floors[L.i-1];if(!par)continue;const P=rects.get(par),C=rects.get(L.fl);if(!P||!C)continue;
+    const pb=pickRect(par,P.rect);const c=par.pickIdx==='all'?COL.glass:colorOf(par.items[par.pickIdx]||{c:0,kind:'cat'});
+    const g=ctx.createLinearGradient(0,P.rect.y+P.rect.h,0,C.rect.y);g.addColorStop(0,withA(c,.16));g.addColorStop(1,withA(c,.05));ctx.fillStyle=g;
+    ctx.beginPath();ctx.moveTo(pb.x,P.rect.y+P.rect.h);ctx.lineTo(pb.x+pb.w,P.rect.y+P.rect.h);ctx.lineTo(C.rect.x+C.rect.w,C.rect.y);ctx.lineTo(C.rect.x,C.rect.y);ctx.closePath();ctx.fill();}
+  for(const L of list){const R=rects.get(L.fl);drawFloor(G,L.fl,R.d,R.rect,R.alpha,R.textA);}
+  if(G.gauge)drawGauge(G);
+}
+function pickRect(fl,rect){if(fl.pickIdx==='all'||fl.pickIdx==null)return {x:rect.x,w:rect.w};const b=blocks(fl,rect.x,rect.w).find(b=>b.it===fl.items[fl.pickIdx]);return b?{x:b.x,w:b.w}:{x:rect.x,w:rect.w};}
+function drawFloor(G,fl,d,rect,alpha,textA){
+  const {ctx}=G,s=sAt(d),bl=blocks(fl,rect.x,rect.w);fl._blocks=bl;fl._rect=rect;
+  const live=fl===dsCur()&&!DS.anim;
+  for(let bi=0;bi<bl.length;bi++){const b=bl[bi];const chosen=fl.pickIdx!=null&&(fl.pickIdx==='all'||fl.items[fl.pickIdx]===b.it);
+    const hov=live&&DS.hover===b.it,sel=live&&DS.sel>=0&&fl.items[DS.sel]===b.it;
+    ctx.globalAlpha=alpha*(fl.pickIdx!=null&&!chosen?.3:1)*(hov?.8:1);ctx.fillStyle=colorOf(b.it);
+    roundRect(ctx,b.x,rect.y,b.w,rect.h,fl.kind==='rows'?Math.min(1.5,b.w/2):Math.min(4,b.w/2));ctx.fill();
+    if(b.it.kind==='mix'){ctx.save();ctx.clip();ctx.strokeStyle=rgba(COL.ink,.18);ctx.lineWidth=1;for(let xx=b.x-rect.h;xx<b.x+b.w;xx+=5){ctx.beginPath();ctx.moveTo(xx,rect.y+rect.h);ctx.lineTo(xx+rect.h,rect.y);ctx.stroke();}ctx.restore();}
+    ctx.globalAlpha=alpha;
+    if(chosen&&fl.pickIdx!=='all'){ctx.strokeStyle=COL.ink;ctx.lineWidth=1.25;roundRect(ctx,b.x-.5,rect.y-.5,b.w+1,rect.h+1,4);ctx.stroke();}
+    if(sel||hov){ctx.strokeStyle=COL.accent;ctx.lineWidth=1.6;roundRect(ctx,b.x-2.5,rect.y-2.5,b.w+5,rect.h+5,5);ctx.stroke();}
+  }
+  ctx.globalAlpha=alpha*textA;
+  const hd=headOf(fl);ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillStyle=COL.ink;ctx.font=`400 ${Math.max(10,(G.W<640?19:27)*s)}px ${F_DISP}`;fitText(ctx,hd.h,rect.x,rect.y-26*s,rect.w);
+  ctx.fillStyle=COL.ink3;ctx.font=`400 ${Math.max(9,12.5*s)}px ${F_UI}`;fitText(ctx,hd.s,rect.x,rect.y-10*s,rect.w);
+  if(d<.5){ctx.textBaseline='top';const mid=DS.kpi;let lastEnd=-1e9;const minW=fl.kind==='rows'?46:(G.W<640?54:70);
+    for(const b of bl){if(b.w<minW||b.x<lastEnd)continue;let nm=itemName(fl,b.it);if(b.it.kind==='mix')nm='Mix';
+      ctx.fillStyle=COL.ink;ctx.font=`600 ${12*s}px ${F_UI}`;fitText(ctx,nm,b.x+1,rect.y+rect.h+8*s,b.w-4);
+      ctx.fillStyle=COL.ink2;ctx.font=`400 ${11.5*s}px ${F_UI}`;ctx.fillText(fmtD(mid,b.it.c),b.x+1,rect.y+rect.h+24*s);lastEnd=b.x+b.w+8;}
+  }else if(fl.pickIdx!=null&&fl.pickIdx!=='all'){const b=bl.find(x=>x.it===fl.items[fl.pickIdx]);if(b){ctx.textBaseline='top';ctx.fillStyle=COL.ink2;ctx.font=`500 ${Math.max(9,11.5*s)}px ${F_UI}`;const right=b.x>rect.x+rect.w*.6;ctx.textAlign=right?'right':'left';ctx.fillText(itemName(fl,b.it),right?b.x+b.w:b.x,rect.y+rect.h+5*s);ctx.textAlign='left';}}
+  ctx.globalAlpha=1;
+}
+function fitText(ctx,t,x,y,maxW){let s=t;if(maxW>0)while(ctx.measureText(s).width>maxW&&s.length>4)s=s.slice(0,-2);if(s!==t)s=s.trimEnd()+'…';ctx.fillText(s,x,y);}
+/* the depth gauge: where you are, how you got here, what's left below */
+function drawGauge(G){
+  const {ctx,W,H}=G,x0=W-G.gauge+22,n=DS.floors.length,top=26,step=Math.min(40,(H-120)/Math.max(1,n));
+  ctx.strokeStyle=COL.rule;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,top);ctx.lineTo(x0,H-60);ctx.stroke();
+  ctx.textAlign='left';ctx.textBaseline='middle';
+  G.gaugeHits=[];
+  const cur=DS.anim?(DS.anim.dir>0?n-2:n-1):n-1;
+  for(let i=0;i<n;i++){const y=top+i*step,fl=DS.floors[i],on=i===cur;
+    ctx.fillStyle=on?COL.accent:COL.panel;ctx.strokeStyle=on?COL.accent:COL.ink3;ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(x0,y,on?5:4,0,6.2832);ctx.fill();ctx.stroke();
+    const lab=i===0?MEASURES[DS.kpi].label:fl.kind==='rows'?'The rows':catName(fl.filters[fl.filters.length-1].dim,fl.filters[fl.filters.length-1].value);
+    ctx.fillStyle=on?COL.ink:COL.ink2;ctx.font=`${on?600:400} 12px ${F_UI}`;fitText(ctx,lab,x0+12,y-6,G.gauge-44);
+    ctx.fillStyle=COL.ink3;ctx.font=`400 11px ${F_UI}`;ctx.fillText(fmtD(DS.kpi,fl.total),x0+12,y+8);
+    G.gaugeHits.push({i,y});}
+  const yb=top+n*step;const last=dsCur();
+  if(last.kind!=='rows'){ctx.setLineDash([2,3]);ctx.strokeStyle=COL.ink3;ctx.beginPath();ctx.moveTo(x0,yb-step+8);ctx.lineTo(x0,yb+6);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=COL.ink3;ctx.font=`400 11px ${F_UI}`;ctx.fillText(`${fmt('count',rowCount(last.filters))} rows below`,x0+12,yb+4);}
+  ctx.fillStyle=COL.ink3;ctx.font=`500 10px ${F_MONO}`;ctx.fillText('DEPTH',x0-4,H-44);ctx.fillText(String(n-1).padStart(2,'0'),x0-4,H-30);
+  DS._gauge={x0,hits:G.gaugeHits};
+}
+function rowCount(filters){const k=K(),m=MEASURES[k.mid];const ev=m.agg==='ratio'?MEASURES[m.num].event:m.event;const fs=filters.map(f=>[getterFor(ev,f.dim),f.value]);if(fs.some(f=>!f[0]))return 0;let n=0;
+  const lo=isLevel(k.mid)?0:Math.min(k.A[0],k.B[0]),hi=Math.max(k.A[1],k.B[1]);for(const r of EVENTS[ev].rows){if(r.mi<lo||r.mi>hi)continue;let ok=true;for(const [g,v] of fs)if(g(r)!==v){ok=false;break;}if(ok)n++;}return n;}
+
+/* ---------- moving ---------- */
+function fall(idx){
+  if(DS.anim)return;const fl=dsCur(),it=fl.items[idx];if(!it||it.kind!=='cat'||fl.kind==='rows')return;
+  const filters=[...fl.filters,{dim:fl.dim,value:it.cat}];let mult=fl.mult,mixC=0,mixName='';
+  if(it.raw&&it.raw.mix!=null){const m=MEASURES[DS.kpi];mult=fl.mult*it.raw.wB;mixC=fl.mult*it.raw.mix;const up=it.raw.wB>it.raw.wA;
+    mixName=`${catName(fl.dim,it.cat)} went from ${pct0(it.raw.wA)} to ${pct0(it.raw.wB)} of ${MEASURES[m.den].label.toLowerCase()}`;mixName+=up?'':'';}
+  const nf=makeFloor(filters,mult,mixC,mixName,it.c);
+  fl.pickIdx=idx;DS.floors.push(nf);hideTip();DS.hover=null;animate(1,null);
+}
+function land(){if(DS.anim)return;const fl=dsCur();if(fl.kind==='rows')return;fl.pickIdx='all';DS.floors.push(rowsFloor(fl));hideTip();animate(1,null);}
+function climb(to){
+  if(DS.anim||DS.floors.length<2)return;if(to==null)to=DS.floors.length-2;if(to>=DS.floors.length-1)return;
+  if(to<DS.floors.length-2)DS.floors=DS.floors.slice(0,to+2);
+  const gone=DS.floors.pop();const par=dsCur();DS.anim={dir:-1,t:0,gone};hideTip();
+  run2(()=>{par.pickIdx=null;DS.sel=Math.max(0,par.items.findIndex(i=>i.kind==='cat'));},-1);
+}
+function animate(dir,done){DS.anim={dir,t:0};run2(done,dir);}
+function run2(done,dir){
+  const dur=reduced()?0:(DS.auto?850:1050),t0=now();
+  const step=()=>{const t=dur?clamp((now()-t0)/dur,0,1):1;DS.anim.t=t;draw();hud();if(t<1)requestAnimationFrame(step);else{DS.anim=null;if(done)done();all();if(DS.auto)autoNext();}};step();
+}
+/* autopilot: keep falling through the biggest piece that pushes the same way as the floor */
+function biggestIdx(fl){const sg=Math.sign(fl.total)||1;let best=-1,bv=0;fl.items.forEach((it,i)=>{if(it.kind==='cat'&&it.c*sg>bv){bv=it.c*sg;best=i;}});return best;}
+function autoNext(){clearTimeout(DS.autoT);DS.autoT=setTimeout(()=>{if(!DS.auto)return;const fl=dsCur();if(fl.kind==='rows'){stopAuto();return;}
+  const i=biggestIdx(fl);if(i>=0&&fl.ranked.length&&DS.floors.length<12)fall(i);else land();},reduced()?0:420);}
+function startAuto(){if(dsCur().kind==='rows')climb(0);DS.auto=true;hud();if(!DS.anim)autoNext();}
+function stopAuto(){DS.auto=false;clearTimeout(DS.autoT);hud();}
+
+/* ---------- panels ---------- */
+function hud(){
+  const k=K(),fl=dsCur();if(!fl)return;
+  const key=DS.floors.length+'|'+DS.kpi+'|'+DS.cmp;
+  if(DS._ck!==key){DS._ck=key;crumbs(document.getElementById('crumbs'),[MEASURES[k.mid].label,...DS.floors.slice(1).map(f=>f.kind==='rows'?'The rows':catName(f.filters[f.filters.length-1].dim,f.filters[f.filters.length-1].value))],i=>{stopAuto();climb(i);});}
+  const deep=DS.floors.length>1;document.getElementById('b-up').disabled=!deep;document.getElementById('b-top').disabled=!deep;
+  document.getElementById('b-rows').disabled=fl.kind==='rows';
+  const a=document.getElementById('b-auto');a.setAttribute('aria-pressed',DS.auto);a.textContent=DS.auto?'Stop':'Follow the biggest';
+}
+function narrate(){
+  const fl=dsCur(),el=document.getElementById('narr'),mid=DS.kpi,m=MEASURES[mid];
+  if(fl.kind==='rows'){
+    const sg=Math.sign(fl.total)||1,rows=fl.items.filter(i=>i.kind==='cat'),top=rows.slice(0,10).filter(i=>Math.sign(i.c)===sg),tsum=top.reduce((s,i)=>s+i.c,0);
+    const opp=rows.filter(i=>Math.sign(i.c)!==sg).length;
+    el.innerHTML=`<p class="say">You've landed. Under this floor are <b>${fmt('count',fl.nRows||0)} ${rowNoun(fl.nRows||0)}</b> that moved ${esc(m.label.toLowerCase())}. The biggest ${top.length} of them carry ${fmtD(mid,tsum)}, ${fl.total?pct0(Math.min(9.99,Math.abs(tsum/fl.total))):'all'} of the floor${opp?`, while ${opp} of the ones shown pushed the other way`:''}.</p><div class="meta">Hover a mark to read it. The table below has the same rows. There's nothing smaller than this.</div>`;
+    return;}
+  if(!fl.items.length){el.innerHTML=`<p class="say">This piece doesn't come apart any further. Land on the rows to see who's in it.</p>`;return;}
+  const sg=Math.sign(fl.total)||1,top=fl.items.find(i=>i.kind==='cat'&&Math.sign(i.c)===sg);
+  const share=top&&fl.total?Math.abs(top.c/fl.total):0,h=top?helps(mid,top.c):null;
+  const opp=fl.items.filter(i=>Math.sign(i.c)!==sg&&i.kind==='cat');
+  let s='';
+  if(DS.floors.length===1)s+=`The first floor splits by <b>${esc(DLAB(fl.dim).toLowerCase())}</b>, because that split explains the most. `;
+  else if(fl.dim)s+=`Here the best split is <b>${esc(DLAB(fl.dim).toLowerCase())}</b>. `;
+  if(top)s+=`<b${h===false?' class="hurt"':''}>${esc(catName(fl.dim,top.cat))}</b> alone is ${fmtD(mid,top.c)}, ${share>1.02?'more than the whole floor\'s':pct0(Math.min(1,share))+' of this floor\'s'} ${fmtD(mid,fl.total)}.`;
+  if(share>1.02&&opp.length)s+=` Other pieces pulled the other way, led by ${esc(catName(fl.dim,opp[0].cat))} at ${fmtD(mid,opp[0].c)}.`;
+  const mix=fl.items.find(i=>i.kind==='mix'&&!i.tiny);
+  if(mix)s+=` The striped ${fmtD(mid,mix.c)} is mix: ${esc(mix.cat)}. That part came from its size changing, not from it doing better or worse, so there's nothing inside to open.`;
+  if(!fl.dim)s=`Every split has been used on the way down, so <b>${esc(itemName(fl,fl.items.find(i=>i.kind==='whole')||fl.items[0]))}</b> stays whole here${mix?`, apart from its ${fmtD(mid,mix.c)} of mix`:''}. Land on the rows to see who it's made of.`;
+  el.innerHTML=`<p class="say">${s}</p><div class="meta">${fl.ranked.length>1?`${fl.ranked.length-1} other split${fl.ranked.length>2?'s':''} below are side tunnels. `:''}Every floor adds up to the piece you fell through.</div>`;
+}
+function storyLines(){
+  const k=K(),mid=k.mid,m=MEASURES[mid],out=[];
+  DS.floors.forEach((fl,i)=>{
+    if(i===0){const dir=fl.total>=0?'rose':'fell';out.push({h:`<b>${esc(m.label)}</b> ${dir} ${fmtD(mid,fl.total).slice(1)}, from ${fmt(m.unit,fl.res.A)} at ${winLabel(mid,k.A)} to ${fmt(m.unit,fl.res.B)} at ${winLabel(mid,k.B)}.`.replace(/ at (?!the end)/g,' in '),t:'' });return;}
+    const par=DS.floors[i-1];
+    if(fl.kind==='rows'){const top=fl.items.filter(x=>x.kind==='cat').slice(0,3).map(x=>esc(itemName(fl,x))+' '+fmtD(mid,x.c));out.push({rows:true,h:`Under it: ${fmt('count',fl.nRows||0)} ${rowNoun(fl.nRows||0)}. The largest are ${top.join(', ')}.`});return;}
+    const it=par.items[par.pickIdx];const sh=par.total?Math.abs(it.c/par.total):0;
+    let line=`<b>${esc(catName(par.dim,it.cat))}</b> <span class="x">(${esc(DLAB(par.dim).toLowerCase())})</span> carries ${fmtD(mid,it.c)}, ${sh>1.02?'more than all':pct0(Math.min(1,sh))+' of'} the ${i===1?'change':'floor above'}.`;
+    const mix=fl.items.find(x=>x.kind==='mix'&&!x.tiny);if(mix)line+=` ${fmtD(mid,mix.c)} of that is mix.`;
+    out.push({h:line});
+  });
+  return out;
+}
+function story(){document.getElementById('story').innerHTML=storyLines().map(l=>`<li${l.rows?' class="rows"':''}>${l.h}</li>`).join('');}
+document.getElementById('copy').addEventListener('click',()=>{const txt=storyLines().map((l,i)=>(l.rows?'Rows':String(i+1).padStart(2,'0'))+'  '+l.h.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"')).join('\n');
+  const b=document.getElementById('copy');const ok=()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1400);};
+  try{navigator.clipboard.writeText(txt).then(ok,()=>{selectStory();});}catch(_){selectStory();}});
+function selectStory(){try{const r=document.createRange();r.selectNodeContents(document.getElementById('story'));const s=getSelection();s.removeAllRanges();s.addRange(r);}catch(_){}}
+function chips(){
+  const fl=dsCur(),el=document.getElementById('chips');
+  if(fl.kind==='rows'||(!fl.ranked.length&&!fl.dead.length)){el.innerHTML='';el.hidden=true;return;}el.hidden=false;
+  el.innerHTML='<span class="lab">Side tunnels</span>'+fl.ranked.map(r=>`<button class="chip${r.dim===fl.dim?' on':''}" data-dim="${r.dim}">${esc(DLAB(r.dim))}<small>explains ${pct0(Math.min(1,r.score))}</small></button>`).join('')+fl.dead.map(d=>`<button class="chip dead" data-why="${esc(d.why)}">${esc(DLAB(d.dim))}<small>no road</small></button>`).join('');
+}
+document.getElementById('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||DS.anim)return;stopAuto();
+  if(b.dataset.why){document.getElementById('narr').innerHTML=`<p class="say">${esc(b.dataset.why)}</p><div class="meta">The graph refuses rather than guess. Pick another tunnel.</div>`;return;}
+  const fl=dsCur(),pick=fl.ranked.find(r=>r.dim===b.dataset.dim);if(!pick)return;fl.dim=pick.dim;buildFloor(fl,pick);all();});
+document.getElementById('chips').addEventListener('pointermove',e=>{const b=e.target.closest('.chip.dead');if(b)showTip(esc(b.dataset.why),e.clientX,e.clientY);else hideTip();});
+document.getElementById('chips').addEventListener('pointerleave',hideTip);
+function recs(){
+  const el=document.getElementById('recs'),fl=dsCur(),on=fl.kind==='rows';el.classList.toggle('on',on);if(!on){el.innerHTML='';return;}
+  const mid=DS.kpi,m=MEASURES[mid],rd=fl.dim;
+  const rows=fl.items.filter(i=>i.kind==='cat').slice(0,25).map(it=>{const h=helps(mid,it.c),col=h==null?'var(--glass)':h?'var(--s1)':'var(--s3)';
+    const who=rd==='customer.id'?`<b>#${it.cat}</b><br><span class="s">${esc(custLine(it.cat))}${SUBPLAN_D.get(+it.cat)?' · '+SUBPLAN_D.get(+it.cat).toLowerCase()+' plan':''}</span>`:`<b>${esc(it.cat)}</b>`;
+    return `<tr><td><i style="background:${col}"></i></td><td>${who}</td><td class="n">${esc(rowStory(it,mid))}</td><td class="n">${fmtD(mid,it.c)}</td></tr>`;}).join('');
+  const more=(fl.nRows||0)-Math.min(25,fl.items.filter(i=>i.kind==='cat').length);
+  el.innerHTML=`<h4>The rows under ${esc(DS.floors.length>2?catName(fl.filters[fl.filters.length-1].dim,fl.filters[fl.filters.length-1].value):MEASURES[mid].label)}, largest first</h4><div class="tw"><table>${rows}</table></div><p class="bottom">${more>0?`${fmt('count',more)} smaller ${rowNoun(more)} not listed. `:''}${m.agg==='ratio'?'For a rate, each row\'s number is its exact share of the rate change, weighted by how much it sold. ':''}This is the deepest floor. Every floor above is built from these.</p>`;
+}
+const SUBPLAN_D=(()=>{const mm=new Map();for(const s of subs)if(s.delta>0&&!mm.has(s.c))mm.set(s.c,s.plan);return mm;})();
+
+/* ---------- input ---------- */
+function hit(px,py){const fl=dsCur();if(!fl||!fl._blocks||!fl._rect)return null;const r=fl._rect;if(py<r.y-8||py>r.y+r.h+36)return null;for(const b of fl._blocks)if(px>=b.x-1&&px<=b.x+b.w+1)return b;return null;}
+function hitAbove(px,py){for(let i=DS.floors.length-2;i>=0;i--){const r=DS.floors[i]._rect;if(r&&py>=r.y-34*sAt(DS.floors.length-1-i)&&py<=r.y+r.h+16&&px>=r.x&&px<=r.x+r.w)return i;}return -1;}
+function hitGauge(px,py){const g=DS._gauge;if(!g||px<g.x0-12)return -1;for(const h of g.hits)if(Math.abs(py-h.y)<14)return h.i;return -1;}
+function tipFor(b,e){const mid=DS.kpi,fl=dsCur(),it=b.it,sh=fl.total?it.c/fl.total:0;
+  let h=`<b>${esc(it.kind==='cat'&&fl.kind==='rows'&&fl.dim==='customer.id'?'Customer #'+it.cat:itemName(fl,it))}</b><br>${fmtD(mid,it.c)} · ${pct0(Math.abs(sh))} of this floor`;
+  if(fl.kind==='rows'&&it.kind==='cat'){if(fl.dim==='customer.id')h+=`<br>${esc(custLine(it.cat))}`;h+=`<br>${esc(rowStory(it,mid))}`;}
+  else if(it.kind==='cat')h+=`<br>Click to fall through it`;
+  else if(it.kind==='mix')h+=`<br>Mix: the piece got bigger or smaller, not better or worse`;
+  else if(it.kind==='whole')h+=`<br>Every split is used up. Click to land on the rows`;
+  else h+=`<br>Grouped so the floor stays readable`;
+  showTip(h,e.clientX,e.clientY);}
+vp.addEventListener('pointermove',e=>{if(DS.anim)return;const r=vp.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;const b=hit(px,py),it=b?b.it:null;
+  if(it!==DS.hover){DS.hover=it;draw();}
+  if(b)tipFor(b,e);else{hideTip();vp.style.cursor=hitAbove(px,py)>=0||hitGauge(px,py)>=0?'n-resize':'pointer';}});
+vp.addEventListener('pointerleave',()=>{DS.hover=null;hideTip();draw();});
+vp.addEventListener('click',e=>{if(DS.anim||e.target.closest('button'))return;const r=vp.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;
+  const g=hitGauge(px,py);if(g>=0){stopAuto();if(g<DS.floors.length-1)climb(g);return;}
+  const b=hit(px,py);if(b){stopAuto();const i=dsCur().items.indexOf(b.it);if(b.it.kind==='cat'&&dsCur().kind!=='rows')fall(i);else if(b.it.kind==='whole')land();return;}
+  const ab=hitAbove(px,py);if(ab>=0){stopAuto();climb(ab);}});
+vp.addEventListener('keydown',e=>{const fl=dsCur();if(!fl)return;
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();if(!fl.items.length)return;const n=fl.items.length;let i=DS.sel<0?0:DS.sel;i=(i+(e.key==='ArrowRight'?1:-1)+n)%n;DS.sel=i;draw();
+    const b=fl._blocks&&fl._blocks.find(x=>x.it===fl.items[i]);if(b){const r=vp.getBoundingClientRect();tipFor(b,{clientX:r.left+b.x+b.w/2,clientY:r.top+fl._rect.y+fl._rect.h+40});}}
+  else if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();stopAuto();hideTip();if(DS.sel>=0&&fl.items[DS.sel]&&fl.items[DS.sel].kind==='cat'&&fl.kind!=='rows')fall(DS.sel);else land();}
+  else if(e.key==='ArrowUp'||e.key==='Backspace'){e.preventDefault();stopAuto();hideTip();climb();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){stopAuto();hideTip();climb();}});
+document.getElementById('b-up').onclick=()=>{stopAuto();climb();};
+document.getElementById('b-top').onclick=()=>{stopAuto();climb(0);};
+document.getElementById('b-rows').onclick=()=>{stopAuto();land();};
+document.getElementById('b-auto').onclick=()=>{if(DS.auto)stopAuto();else startAuto();};
+
+/* ---------- boot ---------- */
+let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(!DS.anim)draw();},100);}).observe(document.querySelector('main'));
+const retheme=()=>{readCols();grainTexture();surface();draw();};
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',retheme);}catch(_){}
+try{new MutationObserver(retheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});}catch(_){}
+grainTexture();surface();dsReset();
+try{document.fonts&&document.fonts.ready.then(()=>{if(!DS.anim)draw();});}catch(_){}
+</script>
+
+</body></html>

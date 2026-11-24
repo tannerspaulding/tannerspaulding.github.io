@@ -1,6 +1,6 @@
 # tannerspaulding.github.io
 
-Home page for tannerspaulding.com. Published by GitHub Pages straight from the `main` branch on every push. The `CNAME` file sets the custom domain.
+Home page for tannerspaulding.com, currently the Futobi Labs home (Test Print look). `futobi/descent.html` is the Descent prototype shown in its live window. Published by GitHub Pages straight from the `main` branch on every push. The `CNAME` file sets the custom domain.
 
 The labs are separate repos and appear under this domain automatically as project sites:
 
