@@ -1,0 +1,933 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Futobi sketches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Three rooms, one per idea. Each room is full width, quiet chrome, the data is the material. */
+:root{
+  --bg:#f4f3ef; --panel:#fbfaf7; --sunk:#ecebe6; --ink:#15171c; --ink2:#464a54; --ink3:#767a85;
+  --rule:#d9d8d2; --rule2:#e7e6e0; --accent:#2f4fd9; --accent-ink:#2440c4; --tint:rgba(47,79,217,.09);
+  --s1:#2f4fd9; --s2:#14998a; --s3:#c27a12; --s4:#a5487a; --glass:#b9bcc6;
+  --f-ui:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-display:"Newsreader","Iowan Old Style",Georgia,serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0c0d11; --panel:#121419; --sunk:#191b22; --ink:#ebecef; --ink2:#b2b5bf; --ink3:#848895;
+  --rule:#262932; --rule2:#1c1f26; --accent:#7089ff; --accent-ink:#9aabff; --tint:rgba(112,137,255,.12);
+  --s1:#6b84f5; --s2:#2aa596; --s3:#d08a26; --s4:#c66a9a; --glass:#3a3e4a; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0c0d11; --panel:#121419; --sunk:#191b22; --ink:#ebecef; --ink2:#b2b5bf; --ink3:#848895;
+  --rule:#262932; --rule2:#1c1f26; --accent:#7089ff; --accent-ink:#9aabff; --tint:rgba(112,137,255,.12);
+  --s1:#6b84f5; --s2:#2aa596; --s3:#d08a26; --s4:#c66a9a; --glass:#3a3e4a; color-scheme:dark; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{padding-block:22px 0}
+.top .wrap{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.mark{font-family:var(--f-display);font-size:26px;font-weight:500;letter-spacing:-.01em}
+.mark i{font-style:normal;color:var(--accent)}
+.sub{color:var(--ink3);font-size:12.5px}
+.sub2{margin-left:auto;color:var(--ink3);font-size:12px}
+nav.rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+@media (max-width:720px){nav.rooms{grid-template-columns:minmax(0,1fr)}}
+nav.rooms button{text-align:left;border:1px solid var(--rule);background:transparent;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;transition:border-color .15s,background .15s}
+nav.rooms button b{font-family:var(--f-display);font-weight:500;font-size:19px}
+nav.rooms button span{color:var(--ink2);font-size:12.5px;line-height:1.4}
+nav.rooms button[aria-selected="true"]{border-color:var(--accent);background:var(--panel)}
+nav.rooms button .n{font-family:var(--f-mono);font-size:10.5px;color:var(--ink3);letter-spacing:.06em}
+.room{display:none;padding-block:26px 40px}
+.room.on{display:block}
+.rhead{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:end;margin-bottom:18px}
+@media (max-width:860px){.rhead{grid-template-columns:minmax(0,1fr);gap:8px}}
+.rhead h2{font-family:var(--f-display);font-weight:400;font-size:44px;line-height:1.02;margin:0;letter-spacing:-.015em}
+.rhead h2 em{color:var(--accent)}
+.rhead p{margin:0;color:var(--ink2);font-size:14.5px;max-width:58ch}
+.controls{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;margin:4px 0 14px}
+.seg{display:inline-flex;gap:2px;background:var(--sunk);border-radius:10px;padding:3px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:8px;padding:5px 11px;font-size:13px;color:var(--ink2)}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--rule)}
+.ctl-lab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-right:6px}
+select.sel{border:1px solid var(--rule);background:var(--panel);border-radius:9px;padding:5px 9px;font-size:13px}
+.ghost{border:1px solid var(--rule);background:transparent;border-radius:9px;padding:5px 11px;font-size:13px;color:var(--ink2)}
+.ghost:hover{border-color:var(--accent);color:var(--ink)}
+.stage{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:18px 18px 14px;position:relative}
+canvas{display:block;width:100%}
+.jarlabels{display:grid;gap:14px;margin-top:10px}
+.jarlabels div{min-width:0;text-align:center;font-size:12.5px;line-height:1.35}
+.jarlabels b{display:block;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jarlabels span{color:var(--ink2);font-variant-numeric:tabular-nums}
+.jarlabels small{display:block;color:var(--ink3)}
+.legendline{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--ink2);align-items:center}
+.legendline i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.pourmonth{position:absolute;top:14px;right:18px;font-family:var(--f-mono);font-size:11.5px;color:var(--ink3)}
+.law{margin:16px 0 0;padding:14px 16px;border-left:2px solid var(--accent);background:var(--tint);border-radius:0 10px 10px 0;font-size:14px;color:var(--ink)}
+.law b{font-weight:600}
+.blockednote{padding:40px 20px;text-align:center;color:var(--ink2);font-size:14.5px}
+.blockednote b{display:block;font-family:var(--f-display);font-weight:500;font-size:22px;color:var(--ink);margin-bottom:6px}
+.scrub{display:flex;gap:12px;align-items:center;margin-top:8px;font-family:var(--f-mono);font-size:11.5px;color:var(--ink3)}
+.scrub input{flex:1;accent-color:var(--accent)}
+/* loom */
+.loomwrap{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px}
+@media (max-width:640px){.loomwrap{grid-template-columns:92px minmax(0,1fr);gap:8px}}
+.gutter{position:relative}
+.glab{position:absolute;left:0;right:0;font-size:12.5px;line-height:1.25;border:0;background:transparent;text-align:right;padding:0 2px;color:var(--ink)}
+.glab b{display:block;font-weight:600}
+.glab span{color:var(--ink3);font-size:11.5px}
+.glab:hover b{color:var(--accent-ink)}
+.loomcv{position:relative}
+.loomcv canvas{border-radius:6px}
+.loomcv canvas.ov{position:absolute;inset:0;pointer-events:none}
+.axis{position:relative;height:18px;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3);margin-top:6px}
+.axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.45;padding:8px 11px;border-radius:9px;max-width:290px;opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.tip b{font-weight:600}
+/* briefing */
+.letter{max-width:760px;margin:0 auto}
+.letter .dateline{font-family:var(--f-mono);font-size:11.5px;color:var(--ink3);letter-spacing:.04em;margin-bottom:8px}
+.letter .greet{font-family:var(--f-display);font-size:30px;line-height:1.2;margin:0 0 6px;font-weight:400}
+.letter .lede{color:var(--ink2);margin:0 0 22px}
+.claim{border-top:1px solid var(--rule);padding:18px 0 16px}
+.claim .num{font-family:var(--f-mono);font-size:11px;color:var(--ink3);letter-spacing:.08em}
+.claim p.say{font-family:var(--f-display);font-size:21px;line-height:1.38;margin:4px 0 8px;font-weight:400}
+.claim p.say strong{font-weight:500;color:var(--accent-ink)}
+.claim .meta{font-family:var(--f-mono);font-size:10.5px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:4px 14px}
+.claim .meta .sure{color:var(--ink2)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.acts button{border:1px solid var(--rule);background:transparent;border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--ink2)}
+.acts button.on{border-color:var(--accent);color:var(--ink);background:var(--tint)}
+.pane{display:none;margin-top:12px;background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--ink)}
+.pane.on{display:block}
+.pane h4{margin:0 0 8px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.pane p{margin:0 0 6px}
+.pane svg{display:block;width:100%;overflow:visible}
+.pane .q{font-family:var(--f-mono);font-size:11px;color:var(--ink2);background:var(--sunk);border-radius:8px;padding:9px 11px;margin-top:10px;white-space:pre-wrap}
+.quiet{border-top:1px solid var(--rule);padding-top:16px;margin-top:6px;color:var(--ink2);font-size:13.5px}
+.quiet h3{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin:0 0 8px}
+.quiet ul{margin:0;padding-left:18px}
+.quiet li{margin:3px 0}
+.t-ax{font-size:11px;fill:var(--ink3);font-family:var(--f-ui)}
+.t-lab{font-size:12px;fill:var(--ink);font-family:var(--f-ui)}
+.t-val{font-size:11.5px;fill:var(--ink2);font-family:var(--f-ui);font-variant-numeric:tabular-nums}
+.t-strong{font-size:12px;fill:var(--ink);font-weight:600;font-family:var(--f-ui)}
+.foot{color:var(--ink3);font-size:12px;padding-block:6px 30px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head><body>
+<header class="top"><div class="wrap">
+  <span class="mark">futobi<i>.</i></span><span class="sub">sketches, round two</span>
+  <span class="sub2">Invented sample: Larkspur Roasting Co., Jan 2025 to Oct 2026</span>
+</div>
+<div class="wrap"><nav class="rooms" role="tablist" aria-label="Sketches">
+  <button role="tab" data-room="sediment" aria-selected="true"><span class="n">01</span><b>Sediment</b><span>The contract becomes physics. Amounts pile, rates tint, levels fill, people can't be in two jars.</span></button>
+  <button role="tab" data-room="loom" aria-selected="false"><span class="n">02</span><b>Loom</b><span>No totals. Every customer is a thread and every week a stitch, so you see who stays.</span></button>
+  <button role="tab" data-room="briefing" aria-selected="false"><span class="n">03</span><b>Briefing</b><span>An agent reads the data and writes to you. A picture appears only to prove a claim.</span></button>
+</nav></div></header>
+
+<main class="wrap">
+<!-- ============ SEDIMENT ============ -->
+<section class="room on" id="room-sediment" role="tabpanel">
+  <div class="rhead">
+    <h2>Every number is made of <em>grains.</em></h2>
+    <p>Pour the business through a sieve and watch it settle. The measure's contract decides the material: money is sand and piles up, a rate is a tint you read in the mix, a balance is water that rises and drains, and people are beads that refuse to be counted twice.</p>
+  </div>
+  <div class="controls">
+    <div><span class="ctl-lab">Material</span><span class="seg" id="sed-mode">
+      <button data-v="sand" class="on">Revenue, as sand</button><button data-v="mix">Return rate, as a mixture</button><button data-v="water">Subscribers, as water</button><button data-v="beads">Customers, as beads</button></span></div>
+    <div><span class="ctl-lab">Sieve by</span><select class="sel" id="sed-sieve" aria-label="Sieve by"></select></div>
+    <button class="ghost" id="sed-again">Pour again</button>
+  </div>
+  <div class="stage" id="sed-stage">
+    <div class="pourmonth" id="sed-month"></div>
+    <canvas id="sed-cv" height="420" aria-label="Jars of grains"></canvas>
+    <div class="jarlabels" id="sed-labels"></div>
+    <div class="scrub" id="sed-scrub" hidden><span id="sed-scrub-a">Jan 2025</span><input type="range" id="sed-range" min="0" max="21" value="21" aria-label="Month"><span id="sed-scrub-b">Oct 2026</span></div>
+    <div class="legendline" id="sed-legend"></div>
+  </div>
+  <p class="law" id="sed-law"></p>
+</section>
+
+<!-- ============ LOOM ============ -->
+<section class="room" id="room-loom" role="tabpanel">
+  <div class="rhead">
+    <h2>The business, <em>woven</em> one customer at a time.</h2>
+    <p>Each of the 2,400 customers is one thread running left to right through 96 weeks. A stitch is a week they bought. Totals are gone, and what's left is the thing totals hide: who came, who stayed, and who quietly stopped.</p>
+  </div>
+  <div class="controls">
+    <div><span class="ctl-lab">Group threads by</span><span class="seg" id="loom-group">
+      <button data-v="customer.acquired" class="on">Acquired via</button><button data-v="customer.segment">Segment</button><button data-v="sub">Subscription</button><button data-v="none">Nothing</button></span></div>
+    <button class="ghost" id="loom-all" hidden>Show every group</button>
+  </div>
+  <div class="stage">
+    <div class="loomwrap">
+      <div class="gutter" id="loom-gutter"></div>
+      <div><div class="loomcv" id="loom-box"><canvas id="loom-cv" aria-label="Customer threads by week"></canvas><canvas class="ov" id="loom-ov"></canvas></div><div class="axis" id="loom-axis"></div></div>
+    </div>
+    <div class="legendline">
+      <span><i style="background:var(--s1)"></i>Bought that week (deeper means more)</span>
+      <span><i style="background:var(--s2)"></i>On a subscription</span>
+      <span><i style="background:var(--s3)"></i>Returned something</span>
+      <span><i style="background:var(--glass)"></i>Known, not buying</span>
+    </div>
+  </div>
+  <p class="law" id="loom-law"></p>
+</section>
+
+<!-- ============ BRIEFING ============ -->
+<section class="room" id="room-briefing" role="tabpanel">
+  <div class="letter" id="brief"></div>
+</section>
+</main>
+<footer class="wrap foot">Futobi sketches. Everything is computed in this page from an invented coffee roaster (about 63,000 events from a fixed seed). The briefing's writer is a set of rules over the same engine, not a language model; it shows the shape of the idea.</footer>
+<div class="tip" id="tip"></div>
+
+<script>
+"use strict";
+
+
+/* ================================================================
+   1. Invented data: Larkspur Roasting Co., Jan 2025 to Oct 2026
+   ================================================================ */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const rnd=mulberry32(20261123);
+const pickW=(items,w)=>{let s=0;for(const x of w)s+=x;let r=rnd()*s;for(let i=0;i<items.length;i++){r-=w[i];if(r<=0)return items[i];}return items[items.length-1];};
+const poisson=l=>{if(l<=0)return 0;const L=Math.exp(-l);let k=0,p=1;do{k++;p*=rnd();}while(p>L);return k-1;};
+const randInt=(a,b)=>a+Math.floor(rnd()*(b-a+1));
+const r2=x=>Math.round(x*100)/100;
+
+const D0=Date.UTC(2025,0,1),DAY=864e5,MONTHS=22;
+const mStart=mi=>(Date.UTC(2025+Math.floor(mi/12),mi%12,1)-D0)/DAY;
+const END_DAY=mStart(MONTHS)-1;
+const MO=new Int16Array(END_DAY+60);
+for(let mi=0;mi<MONTHS+1;mi++){const a=mStart(mi),b=mStart(mi+1);for(let d=a;d<b&&d<MO.length;d++)MO[d]=mi;}
+const MLAB=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const mShort=mi=>MLAB[mi%12]+" '"+(25+Math.floor(mi/12));
+const mLong=mi=>MLAB[mi%12]+' '+(2025+Math.floor(mi/12));
+const qLabel=qi=>'Q'+(qi%4+1)+" '"+(25+Math.floor(qi/4));
+
+const REGIONS=['Northeast','Mid-Atlantic','Southeast','Midwest','West'].map((name,id)=>({id,name}));
+const SITES=[
+ {id:0,name:'Harbor St café',type:'Café',r:1},{id:1,name:'Mill Yard café',type:'Café',r:1},
+ {id:2,name:'Union Hall café',type:'Café',r:0},{id:3,name:'Web store',type:'Online',r:1},
+ {id:4,name:'Wholesale desk',type:'Wholesale',r:1},{id:5,name:'Roastery warehouse',type:'Warehouse',r:1}];
+const PRODUCTS=[
+ ['Konga Yirgacheffe','Ethiopia','Light','Single origin',22,8.4,7],['Guji Natural','Ethiopia','Light','Single origin',23,9.1,5],
+ ['Huila Excelso','Colombia','Medium','Single origin',19,6.9,8],['Nariño Supremo','Colombia','Medium','Single origin',20,7.3,5],
+ ['Antigua Pastoral','Guatemala','Medium','Single origin',20,7.6,5],['Huehue Highland','Guatemala','Dark','Single origin',19,7.1,3],
+ ['Nyeri AA','Kenya','Light','Single origin',24,10.6,4],['Kirinyaga Peaberry','Kenya','Medium','Single origin',25,11.2,3],
+ ['Cerrado Sweet','Brazil','Medium','Single origin',17,5.6,6],['Mogiana Pulped','Brazil','Dark','Single origin',17,5.9,4],
+ ['Lintong Grade 1','Sumatra','Dark','Single origin',20,7.8,4],['Harbor House','Blend','Medium','Blend',16,5.2,10],
+ ['Night Shift','Blend','Dark','Blend',16,5.0,8],['Morning Ledger','Blend','Light','Blend',17,5.6,6],
+ ['Espresso No. 9','Blend','Dark','Blend',18,5.9,9],['Swiss Water Decaf','Colombia','Medium','Decaf',19,7.9,3],
+ ['Mountain Decaf','Brazil','Dark','Decaf',18,7.0,2],['Cold Brew Coarse','Blend','Dark','Blend',15,4.8,4]
+].map(([name,origin,roast,category,price,cost,pop],id)=>({id,name,origin,roast,category,price,cost,pop}));
+const PW={
+ 'Home':PRODUCTS.map(p=>p.pop*(p.category==='Single origin'?1.25:1)),
+ 'Office':PRODUCTS.map(p=>p.pop*(p.category==='Blend'?1.8:p.roast==='Light'?.6:1)),
+ 'Café partner':PRODUCTS.map(p=>p.pop*(p.name.startsWith('Espresso')?3:p.category==='Blend'?1.7:p.category==='Decaf'?.8:.7))};
+const pickProduct=seg=>pickW(PRODUCTS,PW[seg]);
+const SEAS=[1.0,.92,.97,1.0,1.0,.9,.84,.87,1.0,1.06,1.24,1.42];
+
+const customers=[];
+for(let i=0;i<2400;i++){
+  const signup=i<420?0:Math.floor(END_DAY*Math.pow(rnd(),.75));
+  const segment=pickW(['Home','Office','Café partner'],[.64,.22,.14]);
+  let acquired;
+  if(segment==='Café partner')acquired=rnd()<.85?'Wholesale rep':'Referral';
+  else if(segment==='Home')acquired=pickW(['Organic','Referral','Paid social'],[.38,.22,.40]);
+  else acquired=pickW(['Organic','Referral','Paid social'],[.46,.34,.20]);
+  const r=segment==='Café partner'?pickW([0,1,2,3,4],[.3,.5,.08,.06,.06]):pickW([0,1,2,3,4],[.22,.30,.17,.15,.16]);
+  customers.push({id:i,segment,acquired,r,signup});
+}
+const orders=[],rets=[],subs=[];let oid=0;
+function addOrder(c,d,site,nLines,qlo,qhi,pm,disc){
+  const mi=MO[d],pf=mi>=12?1.06:1,cf=mi>=12?1.13:1,id=oid++,used=new Set();
+  for(let k=0;k<nLines;k++){
+    const p=pickProduct(c.segment);if(used.has(p.id))continue;used.add(p.id);
+    const q=randInt(qlo,qhi),rev=r2(q*p.price*pf*pm*(1-disc)),cogs=q*p.cost*cf;
+    orders.push({o:id,d,mi,c:c.id,p:p.id,s:site,q,rev,gm:r2(rev-cogs)});
+    let pr=.016+(c.acquired==='Paid social'?.03:0)+(p.origin==='Kenya'?.008:0)+(p.name==='Cold Brew Coarse'?.02:0)+(site===3?.006:0);
+    if(c.segment==='Café partner')pr*=.4;
+    if(rnd()<pr){const rd=d+randInt(3,21);if(rd<=END_DAY)rets.push({d:rd,mi:MO[rd],c:c.id,p:p.id,refund:r2(rev*(rnd()<.7?1:.5))});}
+  }
+}
+for(const c of customers){
+  let subStart=null,subEnd=Infinity,plan=null;
+  const subP=c.segment==='Home'?.5:c.segment==='Office'?.25:0;
+  if(rnd()<subP){
+    const sd=c.signup+randInt(0,25);
+    if(sd<=END_DAY){
+      subStart=sd;
+      plan=c.segment==='Home'?pickW(['Weekly','Biweekly','Monthly'],[.18,.47,.35]):pickW(['Weekly','Biweekly','Monthly'],[.5,.35,.15]);
+      subs.push({d:sd,mi:MO[sd],c:c.id,plan,delta:1});
+      const hz=.03+(c.acquired==='Paid social'?.045:0)+(plan==='Weekly'?.012:0);
+      let months=1;while(rnd()>hz&&months<60)months++;
+      const cd=sd+Math.round(months*30.4)+randInt(-10,10);
+      if(cd<=END_DAY&&cd>sd){subEnd=cd;subs.push({d:cd,mi:MO[cd],c:c.id,plan,delta:-1});}
+    }
+  }
+  if(subStart!==null){
+    const step=plan==='Weekly'?7:plan==='Biweekly'?14:30;
+    for(let d=subStart;d<Math.min(subEnd,END_DAY+1);d+=step){if(rnd()<.06)continue;addOrder(c,d,3,rnd()<.2?2:1,1,c.segment==='Office'?3:1,1,.10);}
+  }
+  const base=c.segment==='Home'?(subStart!==null?.12:.38):c.segment==='Office'?1.0:1.6;
+  let first=true;
+  for(let mi=MO[c.signup];mi<MONTHS;mi++){
+    const n=poisson(base*SEAS[mi%12]*(1+mi*.006));
+    const ms=Math.max(mStart(mi),c.signup),me=mStart(mi+1)-1;
+    for(let k=0;k<n;k++){
+      const d=randInt(ms,me);let site,lines,qlo,qhi,pm=1,disc=0;
+      if(c.segment==='Café partner'){site=4;lines=randInt(2,3);qlo=4;qhi=14;pm=.62;}
+      else if(c.segment==='Office'){site=rnd()<.62?3:4;lines=randInt(1,3);qlo=2;qhi=6;pm=site===4?.8:1;}
+      else{const cafe=(c.r===1||c.r===0)?.58:.18;if(rnd()<cafe){site=c.r===0?2:pickW([0,1],[.55,.45]);lines=randInt(1,2);qlo=1;qhi=2;}else{site=3;lines=randInt(1,2);qlo=1;qhi=3;}}
+      if(first&&c.acquired==='Paid social')disc=.2;first=false;
+      addOrder(c,d,site,lines,qlo,qhi,pm,disc);
+    }
+  }
+}
+const inv=[];
+for(let d=5;d<=END_DAY;d+=7){const mi=MO[d];for(const p of PRODUCTS)for(const s of [0,1,2,5]){
+  const base=s===5?60+p.pop*26:3+p.pop*1.4;const season=1+.25*Math.sin(((mi%12)-7)/12*2*Math.PI);
+  let kg=base*season*(.8+rnd()*.4);if(p.origin==='Kenya'&&mi>=15&&mi<=18)kg*=.35;
+  inv.push({d,mi,p:p.id,s,kg:Math.round(kg*10)/10});}}
+
+/* ================================================================
+   2. The Grain Graph: entities persist, events happen, measures carry a contract
+   ================================================================ */
+const ENTITIES={
+ customer:{label:'Customer',rows:customers,links:{region:{to:'region',field:'r',label:'lives in'}},
+   attrs:{segment:{label:'Segment',noun:'segment',type:'nominal'},acquired:{label:'Acquired via',noun:'acquisition channel',type:'nominal'}}},
+ product:{label:'Coffee',rows:PRODUCTS,links:{},
+   attrs:{name:{label:'Coffee',noun:'coffee',type:'nominal'},origin:{label:'Origin',noun:'origin',type:'nominal'},
+          roast:{label:'Roast level',noun:'roast level',type:'ordinal',order:['Light','Medium','Dark']},category:{label:'Category',noun:'category',type:'nominal'}}},
+ site:{label:'Site',rows:SITES,links:{region:{to:'region',field:'r',label:'located in'}},
+   attrs:{name:{label:'Site',noun:'site',type:'nominal'},type:{label:'Site type',noun:'site type',type:'nominal'}}},
+ region:{label:'Region',rows:REGIONS,links:{},attrs:{name:{label:'Region',noun:'region',type:'nominal'}}}
+};
+const EVENTS={
+ order:{label:'Order line',grain:'order line',rows:orders,roles:{customer:{to:'customer',field:'c',label:'bought by'},product:{to:'product',field:'p',label:'of'},site:{to:'site',field:'s',label:'sold at'}},attrs:{}},
+ ret:{label:'Return',grain:'returned line',rows:rets,roles:{customer:{to:'customer',field:'c',label:'returned by'},product:{to:'product',field:'p',label:'of'}},attrs:{}},
+ sub:{label:'Subscription change',grain:'start or cancellation',rows:subs,roles:{customer:{to:'customer',field:'c',label:'for'}},attrs:{plan:{label:'Plan',noun:'plan',type:'ordinal',order:['Weekly','Biweekly','Monthly']}}},
+ inv:{label:'Inventory count',grain:'weekly count of one coffee at one site',rows:inv,roles:{product:{to:'product',field:'p',label:'of'},site:{to:'site',field:'s',label:'held at'}},attrs:{}}
+};
+const MEASURES={
+ revenue:{label:'Revenue',event:'order',agg:'sum',v:r=>r.rev,unit:'usd',kind:'additive',good:'up',def:'Line revenue after discounts'},
+ margin:{label:'Gross margin',event:'order',agg:'sum',v:r=>r.gm,unit:'usd',kind:'additive',good:'up',def:'Revenue minus cost of goods'},
+ marginPct:{label:'Margin %',agg:'ratio',num:'margin',den:'revenue',unit:'pct',kind:'ratio',good:'up',def:'Gross margin ÷ Revenue'},
+ bags:{label:'Bags sold',event:'order',agg:'sum',v:r=>r.q,unit:'count',kind:'additive',good:'up',def:'340 g bags'},
+ orders:{label:'Orders',event:'order',agg:'distinct',v:r=>r.o,unit:'count',kind:'distinct',good:'up',def:'An order with three lines counts once'},
+ customers:{label:'Buying customers',event:'order',agg:'distinct',v:r=>r.c,unit:'count',kind:'distinct',good:'up',def:'People with at least one order line'},
+ aov:{label:'Avg order value',agg:'ratio',num:'revenue',den:'orders',unit:'usd',kind:'ratio',good:'up',def:'Revenue ÷ Orders'},
+ refunds:{label:'Refunds',event:'ret',agg:'sum',v:r=>r.refund,unit:'usd',kind:'additive',good:'down',def:'Money returned to customers'},
+ returnRate:{label:'Return rate',agg:'ratio',num:'refunds',den:'revenue',unit:'pct',kind:'ratio',good:'down',def:'Refunds ÷ Revenue, across two events'},
+ starts:{label:'New subscriptions',event:'sub',agg:'sum',v:r=>r.delta>0?1:0,unit:'count',kind:'additive',good:'up',def:'Subscription starts'},
+ cancels:{label:'Cancellations',event:'sub',agg:'sum',v:r=>r.delta<0?1:0,unit:'count',kind:'additive',good:'down',def:'Subscription cancellations'},
+ activeSubs:{label:'Active subscribers',event:'sub',agg:'balance',v:r=>r.delta,unit:'count',kind:'balance',good:'up',def:'Starts minus cancels, read at period end'},
+ onHand:{label:'Inventory on hand',event:'inv',agg:'snapshot',v:r=>r.kg,unit:'kg',kind:'balance',good:null,def:'Last weekly count in the period'}
+};
+const KIND_WORD={additive:'adds up',balance:'balance',ratio:'ratio',distinct:'distinct'};
+const UNIT_SIGN={usd:'$',pct:'%',kg:'kg',count:'#'};
+const ATTRS={};
+for(const [n,e] of Object.entries(ENTITIES))for(const [a,d] of Object.entries(e.attrs))ATTRS[n+'.'+a]={...d,node:n,field:a,values:[...new Set(e.rows.map(r=>r[a]))]};
+for(const [n,e] of Object.entries(EVENTS))for(const [a,d] of Object.entries(e.attrs))ATTRS[n+'.'+a]={...d,node:n,field:a,values:[...new Set(e.rows.map(r=>r[a]))]};
+ATTRS['time.month']={label:'Month',noun:'month',type:'time',node:'time'};
+ATTRS['time.quarter']={label:'Quarter',noun:'quarter',type:'time',node:'time'};
+for(const a of Object.values(ATTRS))if(a.order)a.values=a.order.slice();else if(a.values)a.values.sort();
+const nodeLabel=n=>(ENTITIES[n]||EVENTS[n]).label;
+
+/* ================================================================
+   3. Engine: every measure aggregates at its own event's grain, then walks the graph
+   ================================================================ */
+const SEP='\u0001';
+function findPaths(ev,target){
+  if(ev===target)return [[]];
+  const out=[];
+  const walk=(node,path,seen)=>{
+    if(path.length>=3)return;
+    const src=node===ev?EVENTS[ev].roles:(ENTITIES[node].links||{});
+    for(const [key,e] of Object.entries(src)){
+      if(seen.has(e.to))continue;
+      const step={from:node,key,to:e.to,field:e.field,label:e.label},np=[...path,step];
+      if(e.to===target)out.push(np);else walk(e.to,np,new Set([...seen,e.to]));
+    }
+  };
+  walk(ev,[],new Set([ev]));
+  return out.sort((a,b)=>a.length-b.length);
+}
+const pathKey=p=>p.map(s=>s.to).join('>');
+const pathText=(ev,p)=>p.length?nodeLabel(ev)+' '+p.map(s=>'—'+s.label+'→ '+nodeLabel(s.to)).join(' '):nodeLabel(ev)+' (on the event itself)';
+const viaName=via=>via?nodeLabel(via.split('>')[0]).toLowerCase():'';
+function resolveAttr(ev,spec){
+  const a=ATTRS[spec.attr];const paths=findPaths(ev,a.node);
+  if(!paths.length)return {err:'nopath'};
+  let path=paths[0];
+  if(spec.via){const f=paths.find(p=>pathKey(p)===spec.via);if(!f)return {err:'novia',paths};path=f;}
+  const fld=a.field;
+  const get=row=>{let cur=row;for(const s of path)cur=ENTITIES[s.to].rows[cur[s.field]];return cur[fld];};
+  return {get,path,paths};
+}
+function periodsOf(frame,grain){const out=[];if(grain==='quarter'){for(let q=Math.floor(frame.m0/3);q<=Math.floor(frame.m1/3);q++)out.push(q);}else for(let m=frame.m0;m<=frame.m1;m++)out.push(m);return out;}
+const periodEnd=(p,grain,frame)=>Math.min(grain==='quarter'?p*3+2:p,frame.m1);
+const CACHE=new Map();
+function run(mid,slices,filters,frame){
+  const ck=JSON.stringify([mid,slices,filters,frame]);
+  if(CACHE.has(ck))return CACHE.get(ck);
+  const res=run0(mid,slices,filters,frame);CACHE.set(ck,res);return res;
+}
+function run0(mid,slices,filters,frame){
+  const m=MEASURES[mid];
+  if(m.agg==='ratio'){
+    const a=run(m.num,slices,filters,frame),b=run(m.den,slices,filters,frame);
+    const issues=[...a.issues];for(const x of b.issues)if(!issues.some(y=>y.kind===x.kind&&y.attr===x.attr&&y.event===x.event))issues.push(x);
+    const res={mid,issues,parts:[a,b],blocked:a.blocked||b.blocked,cells:new Map()};
+    if(!res.blocked)for(const [k,den] of b.cells)if(den>0)res.cells.set(k,(a.cells.get(k)||0)/den);
+    return res;
+  }
+  const ev=EVENTS[m.event],issues=[],plan={slices:[],filters:[]};
+  const getters=[];let tIdx=-1,grain=null;
+  slices.forEach((s,i)=>{
+    if(ATTRS[s.attr].type==='time'){tIdx=i;grain=s.attr.slice(5);getters.push(null);plan.slices.push({spec:s,time:true});return;}
+    const r=resolveAttr(m.event,s);
+    if(r.err){issues.push({kind:'slice',attr:s.attr,via:s.via,event:m.event,err:r.err,mid});getters.push(null);}
+    else{getters.push(r.get);plan.slices.push({spec:s,path:r.path,alts:r.paths});}
+  });
+  if(issues.length)return {mid,blocked:true,issues,plan,cells:new Map()};
+  const fs=[];
+  for(const f of filters){
+    const r=resolveAttr(m.event,f);
+    if(r.err){issues.push({kind:'filter',attr:f.attr,via:f.via,event:m.event,err:r.err,mid,values:f.values});continue;}
+    const set=new Set(f.values);fs.push(row=>set.has(r.get(row)));plan.filters.push({spec:f,path:r.path});
+  }
+  const pass=row=>{for(const f of fs)if(!f(row))return false;return true;};
+  const tOf=mi=>grain==='quarter'?Math.floor(mi/3):mi;
+  const keyOf=(row,t)=>{const parts=[];for(let i=0;i<getters.length;i++)parts.push(i===tIdx?t:getters[i](row));return parts.join(SEP);};
+  const cells=new Map(),v=m.v,{m0,m1}=frame,rows=ev.rows;
+  if(m.agg==='sum'||m.agg==='distinct'){
+    for(const row of rows){
+      if(row.mi<m0||row.mi>m1||!pass(row))continue;
+      const k=keyOf(row,tIdx>=0?tOf(row.mi):null);
+      if(m.agg==='sum')cells.set(k,(cells.get(k)||0)+v(row));
+      else{let s=cells.get(k);if(!s){s=new Set();cells.set(k,s);}s.add(v(row));}
+    }
+    if(m.agg==='distinct')for(const [k,s] of cells)cells.set(k,s.size);
+  }else if(m.agg==='balance'){
+    const buck=new Map();
+    for(const row of rows){
+      if(row.mi>m1||!pass(row))continue;
+      const k=keyOf(row,'\u0000');let a=buck.get(k);if(!a){a=new Float64Array(MONTHS);buck.set(k,a);}a[row.mi]+=v(row);
+    }
+    for(const [k,a] of buck){
+      const cum=new Float64Array(MONTHS);let s=0;for(let i=0;i<=m1;i++){s+=a[i];cum[i]=s;}
+      if(tIdx<0)cells.set(k,cum[m1]);
+      else for(const p of periodsOf(frame,grain))cells.set(k.replace('\u0000',String(p)),cum[periodEnd(p,grain,frame)]);
+    }
+    plan.balance=true;
+  }else if(m.agg==='snapshot'){
+    const last=new Map();
+    for(const row of rows){if(row.mi<m0||row.mi>m1)continue;const p=tIdx>=0?tOf(row.mi):'all';if(!(last.get(p)>=row.d))last.set(p,row.d);}
+    for(const row of rows){
+      if(row.mi<m0||row.mi>m1||!pass(row))continue;
+      const p=tIdx>=0?tOf(row.mi):'all';if(last.get(p)!==row.d)continue;
+      const k=keyOf(row,tIdx>=0?p:null);cells.set(k,(cells.get(k)||0)+v(row));
+    }
+    plan.snapshot=[...last.values()];
+  }
+  return {mid,cells,issues,plan,blocked:false};
+}
+
+/* ================================================================
+   4. Formatting
+   ================================================================ */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmt(unit,v,full){
+  if(v==null||!isFinite(v))return '–';
+  const a=Math.abs(v);
+  if(unit==='usd'){
+    if(full)return '$'+Math.round(v).toLocaleString('en-US');
+    if(a>=1e6)return '$'+(v/1e6).toFixed(a>=1e7?1:2)+'M';
+    if(a>=1e4)return '$'+Math.round(v/1e3)+'K';
+    if(a>=1e3)return '$'+(v/1e3).toFixed(1)+'K';
+    return '$'+(a<100?v.toFixed(2):Math.round(v));
+  }
+  if(unit==='pct')return (v*100).toFixed(a<.1?2:1)+'%';
+  if(unit==='kg'){if(!full&&a>=1e4)return (v/1e3).toFixed(1)+'t';return Math.round(v).toLocaleString('en-US')+' kg';}
+  if(!full&&a>=1e5)return (v/1e3).toFixed(0)+'K';
+  return Math.round(v).toLocaleString('en-US');
+}
+function niceTicks(lo,hi,n){
+  if(hi===lo){hi=lo+1;}
+  const span=hi-lo,step0=span/Math.max(1,n),mag=Math.pow(10,Math.floor(Math.log10(step0))),err=step0/mag;
+  const step=(err>=7.5?10:err>=3.5?5:err>=1.5?2:1)*mag;
+  const a=Math.floor(lo/step)*step,b=Math.ceil(hi/step)*step,t=[];
+  for(let x=a;x<=b+step*1e-6;x+=step)t.push(+x.toFixed(10));
+  return t;
+}
+const FRAMES={l12:{m0:10,m1:21,label:'last 12 months'},y26:{m0:12,m1:21,label:'2026 to date'},y25:{m0:0,m1:11,label:'2025'},all:{m0:0,m1:21,label:'all time'}};
+const frameRange=f=>mLong(f.m0)+' to '+mLong(f.m1);
+const SERIES=['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
+const timeLabel=(grain,p)=>grain==='quarter'?qLabel(+p):mShort(+p);
+const timeLong=(grain,p)=>grain==='quarter'?qLabel(+p):mLong(+p);
+
+
+
+/* ================================================================
+   Shared helpers
+   ================================================================ */
+const val=(mid,slices,filters,frame)=>run(mid,slices||[],filters||[],frame).cells.get('');
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mixHex(a,b,t){const x=hexRgb(a),y=hexRgb(b);return 'rgb('+x.map((v,i)=>Math.round(v*(1-t)+y[i]*t)).join(',')+')';}
+const mixRgb=(a,b,t)=>{const x=hexRgb(a),y=hexRgb(b);return x.map((v,i)=>Math.round(v*(1-t)+y[i]*t));};
+const pctS=(v,d=1)=>(v*100).toFixed(d)+'%';
+const nice=v=>{const steps=[1,2,2.5,5,10];const mag=Math.pow(10,Math.floor(Math.log10(v)));for(const s of steps)if(s*mag>=v)return s*mag;return 10*mag;};
+const tip=document.getElementById('tip');
+function showTip(html,x,y){tip.innerHTML=html;tip.classList.add('on');const r=tip.getBoundingClientRect();let px=x+14,py=y+14;if(px+r.width>innerWidth-8)px=x-r.width-14;if(py+r.height>innerHeight-8)py=y-r.height-14;tip.style.left=px+'px';tip.style.top=py+'px';}
+const hideTip=()=>tip.classList.remove('on');
+const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ALL=FRAMES.all;
+const specOf=attr=>attr==='region.name'?{attr,via:'customer>region'}:{attr};
+function catsOf(res,idx){const s=new Set();for(const k of res.cells.keys())s.add(k.split(SEP)[idx]);return [...s];}
+function orderCats(attr,cats,totalOf){const a=ATTRS[attr];if(a.type==='ordinal')return a.values.filter(v=>cats.includes(v));return cats.sort((x,y)=>totalOf(y)-totalOf(x));}
+
+/* ================================================================
+   Room 1: Sediment
+   ================================================================ */
+const SED={mode:'sand',sieve:{sand:'customer.acquired',mix:'customer.acquired',water:'sub.plan',beads:'customer.segment'},anim:null,built:null};
+const SIEVES={
+ sand:['customer.acquired','customer.segment','product.roast','product.category','site.type','region.name'],
+ mix:['customer.acquired','customer.segment','product.roast','product.category','site.type','region.name'],
+ water:['sub.plan','customer.segment','customer.acquired','region.name'],
+ beads:['customer.segment','customer.acquired','region.name','product.roast','product.category','site.type']
+};
+const sieveLabel=a=>a==='region.name'?'Customer region':ATTRS[a].label;
+const sedCv=document.getElementById('sed-cv'),sedLabels=document.getElementById('sed-labels'),sedLaw=document.getElementById('sed-law'),sedLegend=document.getElementById('sed-legend'),sedMonth=document.getElementById('sed-month'),sedScrub=document.getElementById('sed-scrub'),sedRange=document.getElementById('sed-range');
+
+function sedSetup(){
+  const sel=document.getElementById('sed-sieve');
+  sel.innerHTML=SIEVES[SED.mode].map(a=>`<option value="${a}" ${a===SED.sieve[SED.mode]?'selected':''}>${esc(sieveLabel(a))}</option>`).join('');
+  document.querySelectorAll('#sed-mode button').forEach(b=>b.classList.toggle('on',b.dataset.v===SED.mode));
+}
+function sedGeom(n){
+  const W=sedCv.clientWidth||800,mobile=W<600,H=mobile?340:420,gap=mobile?8:14;
+  const jw=(W-gap*(n-1))/n;
+  return {W,H,gap,jw,base:H-8,top:30,mobile};
+}
+function sizeCanvas(cv,W,H){const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.height=H+'px';const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return ctx;}
+function drawJars(ctx,G,n,col){
+  ctx.strokeStyle=col;ctx.lineWidth=1.25;
+  for(let j=0;j<n;j++){const x=j*(G.jw+G.gap)+.5,w=G.jw-1,y0=G.top-6,y1=G.base+.5,r=10;
+    ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y1-r);ctx.quadraticCurveTo(x,y1,x+r,y1);ctx.lineTo(x+w-r,y1);ctx.quadraticCurveTo(x+w,y1,x+w,y1-r);ctx.lineTo(x+w,y0);ctx.stroke();}
+}
+function labelsHtml(n,items){sedLabels.style.gridTemplateColumns=`repeat(${n},minmax(0,1fr))`;sedLabels.style.gap=(sedCv.clientWidth<600?8:14)+'px';sedLabels.innerHTML=items.map(i=>`<div><b title="${esc(i.name)}">${esc(i.name)}</b><span>${i.value}</span>${i.small?`<small>${i.small}</small>`:''}</div>`).join('');}
+
+/* Build the grains: each grain is a fixed amount, poured in time order */
+function buildSand(attr,withRefunds){
+  const sp=specOf(attr);
+  const rv=run('revenue',[sp,{attr:'time.month'}],[],ALL);
+  let rf=null;
+  if(withRefunds){rf=run('refunds',[sp,{attr:'time.month'}],[],ALL);if(rf.blocked)return {blocked:rf.issues[0]};}
+  const tot=new Map();for(const [k,v] of rv.cells){const c=k.split(SEP)[0];tot.set(c,(tot.get(c)||0)+v);}
+  const cats=orderCats(attr,[...tot.keys()],c=>tot.get(c)).slice(0,7);
+  const jars=cats.map(c=>{const rev=new Float64Array(MONTHS),ref=new Float64Array(MONTHS);
+    for(let m=0;m<MONTHS;m++){rev[m]=rv.cells.get(c+SEP+m)||0;if(rf)ref[m]=rf.cells.get(c+SEP+m)||0;}
+    return {name:c,rev,ref,total:tot.get(c),refTotal:ref.reduce((a,b)=>a+b,0)};});
+  return {jars};
+}
+function buildBeads(attr){
+  const sp=specOf(attr);const r=resolveAttr('order',sp);
+  const sets=new Map();
+  for(const row of orders){const k=r.get(row);let s=sets.get(k);if(!s){s=new Set();sets.set(k,s);}s.add(row.c);}
+  const count=new Map();for(const s of sets.values())for(const c of s)count.set(c,(count.get(c)||0)+1);
+  const cats=orderCats(attr,[...sets.keys()],c=>sets.get(c).size).slice(0,7);
+  const jars=cats.map(c=>{const s=sets.get(c);let ov=0;for(const x of s)if(count.get(x)>1)ov++;return {name:c,n:s.size,ov};});
+  return {jars,distinct:count.size,sum:jars.reduce((a,j)=>a+j.n,0)};
+}
+function sedRun(instant){
+  if(SED.anim){cancelAnimationFrame(SED.anim);SED.anim=null;}
+  sedScrub.hidden=SED.mode!=='water';{const blk=document.getElementById('sed-block');if(blk)blk.hidden=true;sedCv.style.display='';}
+  const attr=SED.sieve[SED.mode];
+  if(SED.mode==='water')return waterRun(attr,instant);
+  const ink=css('--ink'),s1=css('--s1'),s3=css('--s3'),panel=css('--panel'),glass=css('--glass');
+  let B,unit,grains=[],labels=[],g,legend='',law='';
+  if(SED.mode==='beads'){
+    B=buildBeads(attr);
+    const n=B.jars.length,G=sedGeom(n);g=G.mobile?6:7.5;
+    const cols=Math.floor((G.jw-8)/g),rows=Math.floor((G.base-G.top)/g),cap=cols*rows*.86;
+    const maxN=Math.max(...B.jars.map(j=>j.n));unit=Math.max(1,Math.ceil(maxN/cap));
+    B.jars.forEach((j,ji)=>{const k=Math.round(j.n/unit),o=Math.round(j.ov/unit);const arr=[];for(let i=0;i<k;i++)arr.push({j:ji,c:i<o?s3:s1,m:0});for(let i=arr.length-1;i>0;i--){const r=Math.floor(Math.random()*(i+1));[arr[i],arr[r]]=[arr[r],arr[i]];}grains.push(...arr);});
+    for(let i=grains.length-1;i>0;i--){const r=Math.floor(Math.random()*(i+1));[grains[i],grains[r]]=[grains[r],grains[i]];}
+    labels=B.jars.map(j=>({name:j.name,value:fmt('count',j.n)+' customers',small:j.ov?fmt('count',j.ov)+' also in another jar':'in this jar only'}));
+    legend=`<span><i style="background:var(--s1)"></i>1 bead = ${unit} customer${unit>1?'s':''}</span><span><i style="background:var(--s3)"></i>Also sits in another jar</span>`;
+    const dup=B.sum-B.distinct;
+    law=dup>0?`<b>A person can't be poured into two jars.</b> These jars hold ${fmt('count',B.sum)} beads between them, but there are only ${fmt('count',B.distinct)} customers. The ${fmt('count',dup)} extra are people who bought in more than one ${esc(sieveLabel(attr).toLowerCase())}. That's why a distinct count is never stacked or summed: Futobi recounts the whole instead.`
+      :`<b>Every customer sits in exactly one jar.</b> ${esc(sieveLabel(attr))} belongs to the customer, so the ${fmt('count',B.sum)} beads add up to all ${fmt('count',B.distinct)} customers. Try sieving by roast or site type and watch beads start sitting in two jars at once.`;
+    return pour(B.jars.length,grains,g,labels,legend,law,instant,true);
+  }
+  B=buildSand(attr,SED.mode==='mix');
+  if(B.blocked){
+    sedLabels.innerHTML='';sedLegend.innerHTML='';sedMonth.textContent='';
+    const ctx=sizeCanvas(sedCv,sedCv.clientWidth||800,220);ctx.clearRect(0,0,9999,9999);
+    sedCv.style.display='none';
+    let note=document.getElementById('sed-block');if(!note){note=document.createElement('div');note.id='sed-block';note.className='blockednote';sedCv.after(note);}
+    note.hidden=false;note.innerHTML=`<b>This mixture can't be made.</b>A return doesn't record the site that sold it, so the model has no road from Return to ${esc(sieveLabel(attr))}. Futobi won't guess which jar a refund belongs in.`;
+    sedLaw.innerHTML=`<b>An honest refusal is part of the material.</b> Revenue can be sieved by site, refunds can't, so the rate between them can't either. In a dashboard this tile would quietly divide one number by the wrong other number.`;
+    return;
+  }
+  const n=B.jars.length,G=sedGeom(n);g=G.mobile?2.6:3;
+  const cols=Math.floor((G.jw-8)/g),rows=Math.floor((G.base-G.top)/g),cap=cols*rows*.9;
+  const maxT=Math.max(...B.jars.map(j=>j.total));unit=nice(maxT/cap);
+  const light=mixHex(s1,panel,.55);
+  B.jars.forEach((j,ji)=>{let cum=0,placed=0,cumR=0,placedR=0;
+    for(let m=0;m<MONTHS;m++){cum+=j.rev[m];cumR+=j.ref[m];const k=Math.floor(cum/unit)-placed;placed+=k;
+      let r=SED.mode==='mix'?Math.floor(cumR/unit)-placedR:0;r=Math.min(r,k);placedR+=r;
+      const arr=[];for(let i=0;i<k;i++)arr.push({j:ji,m,c:i<r?s3:(m<12?light:s1)});
+      for(let i=arr.length-1;i>0;i--){const q=Math.floor(Math.random()*(i+1));[arr[i],arr[q]]=[arr[q],arr[i]];}
+      j['g'+m]=arr;}
+  });
+  for(let m=0;m<MONTHS;m++){const arr=[];for(const j of B.jars)arr.push(...j['g'+m]);for(let i=arr.length-1;i>0;i--){const q=Math.floor(Math.random()*(i+1));[arr[i],arr[q]]=[arr[q],arr[i]];}grains.push(...arr);}
+  if(SED.mode==='sand'){
+    labels=B.jars.map(j=>({name:j.name,value:fmt('usd',j.total),small:`2026 is ${Math.round(j.rev.slice(12).reduce((a,b)=>a+b,0)/j.total*100)}% of it`}));
+    legend=`<span><i style="background:${light}"></i>1 grain = ${fmt('usd',unit,true)} sold in 2025</span><span><i style="background:var(--s1)"></i>sold in 2026</span>`;
+    const all=B.jars.reduce((a,j)=>a+j.total,0);
+    law=`<b>Money is sand: it piles, so it can be added.</b> Pour all ${B.jars.length} jars together and you get ${fmt('usd',all)}, exactly the total. The layers are time, laid down month by month, so the deeper band on top is this year. Nothing here was averaged or rounded except the grain size.`;
+  }else{
+    const tR=B.jars.reduce((a,j)=>a+j.refTotal,0),tV=B.jars.reduce((a,j)=>a+j.total,0);
+    labels=B.jars.map(j=>({name:j.name,value:pctS(j.refTotal/j.total,2)+' came back',small:fmt('usd',j.refTotal)+' of '+fmt('usd',j.total)}));
+    legend=`<span><i style="background:var(--s1)"></i>1 grain = ${fmt('usd',unit,true)} sold</span><span><i style="background:var(--s3)"></i>${fmt('usd',unit,true)} of it refunded</span>`;
+    law=`<b>A rate is a mixture, not a pile.</b> Look at how ochre the sand is, not how tall. Overall ${pctS(tR/tV,2)} came back. You can't stack mixtures: two jars poured together have a new tint, which is why a ratio is always recomputed from its parts and never summed.`;
+  }
+  pour(n,grains,g,labels,legend,law,instant,false);
+}
+function pour(n,grains,g,labels,legend,law,instant,round){
+  const blk=document.getElementById('sed-block');if(blk)blk.hidden=true;sedCv.style.display='';
+  const G=sedGeom(n);const ctx=sizeCanvas(sedCv,G.W,G.H);
+  const glass=css('--glass');
+  const layer=document.createElement('canvas');const lctx=sizeCanvas(layer,G.W,G.H);
+  const cols=Math.floor((G.jw-8)/g);
+  const heights=Array.from({length:n},()=>new Int16Array(cols));
+  labelsHtml(n,labels);sedLegend.innerHTML=legend;sedLaw.innerHTML=law;
+  const stamp=(gr)=>{const h=heights[gr.j];let c=gr.col;
+    for(let k=0;k<8;k++){const L=c>0?h[c-1]:1e9,R=c<cols-1?h[c+1]:1e9;const lo=Math.min(L,R);if(lo<h[c]-1){c=(L===R?(Math.random()<.5?c-1:c+1):(L<R?c-1:c+1));}else break;}
+    const row=h[c];h[c]++;const x=gr.j*(G.jw+G.gap)+4+c*g,y=G.base-2-(row+1)*g;
+    lctx.fillStyle=gr.c;if(round){lctx.beginPath();lctx.arc(x+g/2,y+g/2,g/2-.6,0,Math.PI*2);lctx.fill();}else lctx.fillRect(x,y,g-.45,g-.45);};
+  const colFor=()=>{let r=(Math.random()+Math.random()+Math.random()-1.5)/1.5;return Math.max(0,Math.min(cols-1,Math.round(cols/2+r*cols*.55)));};
+  for(const gr of grains)gr.col=colFor();
+  if(instant||reduced()){for(const gr of grains)stamp(gr);ctx.drawImage(layer,0,0,G.W,G.H);drawJars(ctx,G,n,glass);sedMonth.textContent=SED.mode==='beads'?'':'Poured Jan 2025 to Oct 2026';return;}
+  let i=0;const falling=[];const rate=Math.max(6,Math.ceil(grains.length/260));
+  const frame=()=>{
+    for(let k=0;k<rate&&i<grains.length;k++,i++){const gr=grains[i];gr.y=G.top-20-Math.random()*16;gr.vy=1+Math.random();falling.push(gr);}
+    if(i<grains.length&&grains[i]&&SED.mode!=='beads')sedMonth.textContent='Pouring '+mLong(grains[i].m);
+    for(let k=falling.length-1;k>=0;k--){const gr=falling[k];gr.vy+=.45;gr.y+=gr.vy;const surf=G.base-2-(heights[gr.j][gr.col]+1)*g;if(gr.y>=surf){stamp(gr);falling.splice(k,1);}}
+    ctx.clearRect(0,0,G.W,G.H);ctx.drawImage(layer,0,0,G.W,G.H);
+    for(const gr of falling){ctx.fillStyle=gr.c;const x=gr.j*(G.jw+G.gap)+4+gr.col*g;if(round){ctx.beginPath();ctx.arc(x+g/2,gr.y+g/2,g/2-.6,0,Math.PI*2);ctx.fill();}else ctx.fillRect(x,gr.y,g-.45,g-.45);}
+    drawJars(ctx,G,n,glass);
+    if(i<grains.length||falling.length)SED.anim=requestAnimationFrame(frame);else{SED.anim=null;sedMonth.textContent=SED.mode==='beads'?'':'Poured Jan 2025 to Oct 2026';}
+  };
+  SED.anim=requestAnimationFrame(frame);
+}
+/* Water: a balance is a level */
+let WATER=null;
+function waterRun(attr,instant){
+  const sp=specOf(attr);
+  const lv=run('activeSubs',[sp,{attr:'time.month'}],[],ALL),st=run('starts',[sp,{attr:'time.month'}],[],ALL),cn=run('cancels',[sp,{attr:'time.month'}],[],ALL);
+  const last=new Map();for(const [k,v] of lv.cells){const [c,m]=k.split(SEP);if(+m===MONTHS-1)last.set(c,v);}
+  const cats=orderCats(attr,catsOf(lv,0),c=>last.get(c)||0).slice(0,6);
+  const jars=cats.map(c=>{const L=[],S=[],C=[];for(let m=0;m<MONTHS;m++){L.push(lv.cells.get(c+SEP+m)||0);S.push(st.cells.get(c+SEP+m)||0);C.push(cn.cells.get(c+SEP+m)||0);}return {name:c,L,S,C};});
+  const max=Math.max(...jars.flatMap(j=>j.L))||1;
+  WATER={jars,max,t:instant?MONTHS-1:0,attr};
+  const tot=m=>jars.reduce((a,j)=>a+j.L[m],0);
+  sedLegend.innerHTML=`<span><i style="background:var(--s2)"></i>Active subscribers at the month's end</span><span>Drops falling in are starts that month; the stream below is cancellations</span>`;
+  const sumL=jars.reduce((a,j)=>a+j.L.reduce((x,y)=>x+y,0),0);
+  sedLaw.innerHTML=`<b>A balance is a level, not a pile.</b> Starts drip in, cancellations drain out, and the jar shows what's left: ${fmt('count',tot(MONTHS-1))} subscribers at the end of October 2026. Add up every month's level and you'd claim ${fmt('count',sumL)}, which means nothing. So Futobi lets a level be added across jars, never across time.`;
+  sedRange.value=WATER.t;
+  if(instant||reduced()){WATER.t=MONTHS-1;sedRange.value=WATER.t;drawWater();return;}
+  const t0=performance.now(),dur=6500;
+  const step=now=>{const p=Math.min(1,(now-t0)/dur);WATER.t=p*(MONTHS-1);sedRange.value=Math.round(WATER.t);drawWater();if(p<1)SED.anim=requestAnimationFrame(step);else SED.anim=null;};
+  SED.anim=requestAnimationFrame(step);
+}
+function drawWater(){
+  if(!WATER)return;
+  const {jars,max}=WATER,t=WATER.t,n=jars.length,G=sedGeom(n);G.base=G.H-26;
+  const ctx=sizeCanvas(sedCv,G.W,G.H);ctx.clearRect(0,0,G.W,G.H);
+  const s2=css('--s2'),panel=css('--panel'),glass=css('--glass');
+  const m0=Math.floor(t),m1=Math.min(MONTHS-1,m0+1),f=t-m0;
+  const scale=(G.base-G.top-14)/max;
+  jars.forEach((j,ji)=>{
+    const lvl=j.L[m0]*(1-f)+j.L[m1]*f,x=ji*(G.jw+G.gap),h=lvl*scale,y=G.base-h;
+    ctx.fillStyle=mixHex(s2,panel,.25);ctx.beginPath();const r=10;
+    ctx.moveTo(x+1,y);ctx.lineTo(x+1,G.base-r);ctx.quadraticCurveTo(x+1,G.base,x+1+r,G.base);ctx.lineTo(x+G.jw-1-r,G.base);ctx.quadraticCurveTo(x+G.jw-1,G.base,x+G.jw-1,G.base-r);ctx.lineTo(x+G.jw-1,y);ctx.closePath();if(h>0)ctx.fill();
+    ctx.strokeStyle=s2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+2,y);ctx.lineTo(x+G.jw-2,y);if(h>0)ctx.stroke();
+    // drops: starts in the current month, falling toward the surface
+    const starts=j.S[Math.round(t)]||0,drops=Math.min(14,Math.round(starts/Math.max(1,max/60)));
+    ctx.fillStyle=s2;for(let d=0;d<drops;d++){const ph=((t*3+d/drops)%1);const dx=x+G.jw/2+Math.sin(d*12.9)*G.jw*.18,dy=G.top-10+ph*(y-G.top+4);ctx.beginPath();ctx.ellipse(dx,dy,1.8,3,0,0,Math.PI*2);ctx.fill();}
+    // drain: cancellations
+    const c=j.C[Math.round(t)]||0,dw=Math.min(G.jw*.5,1+c/Math.max(1,max/90));
+    if(c>0){ctx.fillStyle=mixHex(s2,panel,.45);ctx.fillRect(x+G.jw/2-dw/2,G.base+3,dw,G.H-G.base-3);}
+  });
+  drawJars(ctx,G,n,glass);
+  const mi=Math.round(t);sedMonth.textContent=mLong(mi);
+  labelsHtml(n,jars.map(j=>({name:j.name,value:fmt('count',j.L[mi])+' active',small:`+${j.S[mi]} started, −${j.C[mi]} cancelled`})));
+}
+sedRange.addEventListener('input',()=>{if(SED.anim){cancelAnimationFrame(SED.anim);SED.anim=null;}if(WATER){WATER.t=+sedRange.value;drawWater();}});
+document.getElementById('sed-mode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;SED.mode=b.dataset.v;sedSetup();sedRun(false);});
+document.getElementById('sed-sieve').addEventListener('change',e=>{SED.sieve[SED.mode]=e.target.value;sedRun(false);});
+document.getElementById('sed-again').addEventListener('click',()=>sedRun(false));
+
+/* ================================================================
+   Room 2: Loom
+   ================================================================ */
+const WEEKS=Math.ceil((END_DAY+1)/7);
+const LOOM={group:'customer.acquired',zoom:null,rows:[],img:null,map:[]};
+const subOf=new Map();for(const s of subs){let o=subOf.get(s.c);if(!o){o={plan:s.plan,start:null,end:null};subOf.set(s.c,o);}if(s.delta>0)o.start=s.d;else o.end=s.d;}
+const spendW=new Float32Array(customers.length*WEEKS),retW=new Uint8Array(customers.length*WEEKS),firstW=new Int16Array(customers.length).fill(-1),lastW=new Int16Array(customers.length).fill(-1),custRev=new Float64Array(customers.length),custOrders=customers.map(()=>new Set());
+for(const o of orders){const w=Math.floor(o.d/7);spendW[o.c*WEEKS+w]+=o.rev;custRev[o.c]+=o.rev;custOrders[o.c].add(o.o);if(firstW[o.c]<0||w<firstW[o.c])firstW[o.c]=w;if(w>lastW[o.c])lastW[o.c]=w;}
+for(const r of rets){retW[r.c*WEEKS+Math.floor(r.d/7)]=1;}
+const LAST13=WEEKS-13;
+function groupKey(c,g){if(g==='none')return 'All customers';if(g==='sub'){const s=subOf.get(c.id);if(!s)return 'Never subscribed';return s.end!=null?'Subscribed, then cancelled':'Subscribed, still active';}return c[g.split('.')[1]];}
+function loomBuild(){
+  const g=LOOM.group;const groups=new Map();
+  for(const c of customers){const k=groupKey(c,g);if(LOOM.zoom&&k!==LOOM.zoom)continue;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(c);}
+  let keys=[...groups.keys()];
+  const order=g==='sub'?['Subscribed, still active','Subscribed, then cancelled','Never subscribed']:null;
+  keys.sort(order?(a,b)=>order.indexOf(a)-order.indexOf(b):(a,b)=>groups.get(b).length-groups.get(a).length);
+  const out=[];
+  for(const k of keys){const cs=groups.get(k).sort((a,b)=>a.signup-b.signup||a.id-b.id);
+    const old=cs.filter(c=>Math.floor(c.signup/7)<LAST13);const still=old.filter(c=>lastW[c.id]>=LAST13).length;
+    out.push({key:k,cs,still:old.length?still/old.length:0,old:old.length});}
+  LOOM.groups=out;
+}
+function loomDraw(){
+  const box=document.getElementById('loom-box'),cv=document.getElementById('loom-cv'),ov=document.getElementById('loom-ov');
+  const W=box.clientWidth||700,mobile=W<520,H=LOOM.zoom?(mobile?520:620):(mobile?560:660);
+  const gapRows=LOOM.groups.length>1?Math.round(LOOM.groups.reduce((a,g)=>a+g.cs.length,0)*.025):0;
+  const totalRows=LOOM.groups.reduce((a,g)=>a+g.cs.length,0)+gapRows*(LOOM.groups.length-1);
+  const SW=3,IW=WEEKS*SW;
+  const img=new ImageData(IW,totalRows);const d=img.data;
+  const panel=hexRgb(css('--panel')),glass=mixRgb(css('--glass'),css('--panel'),.35),s1=css('--s1'),s2=hexRgb(css('--s2')),s3=hexRgb(css('--s3'));
+  const lv=[mixRgb(s1,css('--panel'),.55),mixRgb(s1,css('--panel'),.25),hexRgb(s1)];
+  const subTint=mixRgb(css('--s2'),css('--panel'),.55);
+  const put=(x,y,c)=>{const i=(y*IW+x)*4;d[i]=c[0];d[i+1]=c[1];d[i+2]=c[2];d[i+3]=255;};
+  for(let i=0;i<d.length;i+=4){d[i]=panel[0];d[i+1]=panel[1];d[i+2]=panel[2];d[i+3]=255;}
+  let y=0;LOOM.map=[];const bands=[];
+  LOOM.groups.forEach((gr,gi)=>{const y0=y;
+    for(const c of gr.cs){const sw=Math.floor(c.signup/7),so=subOf.get(c.id);
+      const sA=so&&so.start!=null?Math.floor(so.start/7):1e9,sB=so&&so.end!=null?Math.floor(so.end/7):(so&&so.start!=null?WEEKS:-1);
+      const end=Math.max(lastW[c.id],sB>=WEEKS?WEEKS-1:sB);
+      for(let w=sw;w<WEEKS;w++){
+        const sp=spendW[c.id*WEEKS+w],onSub=w>=sA&&w<sB;let col=null;
+        if(retW[c.id*WEEKS+w])col=s3;
+        else if(sp>0)col=onSub?s2:lv[sp<25?0:sp<70?1:2];
+        else if(onSub)col=subTint;
+        else if(w<=end)col=glass;
+        if(col)for(let k=0;k<SW-1;k++)put(w*SW+k,y,col);
+      }
+      LOOM.map[y]=c;y++;}
+    bands.push({gr,y0,y1:y});if(gi<LOOM.groups.length-1)y+=gapRows;});
+  const ctx=sizeCanvas(cv,W,H);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  const tmp=document.createElement('canvas');tmp.width=IW;tmp.height=totalRows;tmp.getContext('2d').putImageData(img,0,0);
+  ctx.clearRect(0,0,W,H);ctx.drawImage(tmp,0,0,W,H);
+  sizeCanvas(ov,W,H);
+  LOOM.geom={W,H,totalRows,bands};
+  // gutter labels
+  const gut=document.getElementById('loom-gutter');gut.style.height=H+'px';
+  gut.innerHTML=bands.map(b=>{const top=b.y0/totalRows*H,hh=(b.y1-b.y0)/totalRows*H;
+    return `<button class="glab" data-g="${esc(b.gr.key)}" style="top:${top+Math.max(0,hh/2-18)}px" title="${LOOM.zoom?'Show every group':'Zoom into this group'}"><b>${esc(b.gr.key)}</b><span>${fmt('count',b.gr.cs.length)} threads<br>${Math.round(b.gr.still*100)}% still buying</span></button>`;}).join('');
+  // axis
+  const ax=document.getElementById('loom-axis');
+  ax.innerHTML=[0,3,6,9,12,15,18,21].filter(m=>!mobile||m%6===0||m===21).map(m=>`<span style="left:${(mStart(m)/7)/WEEKS*100}%">${mShort(m)}</span>`).join('');
+  document.getElementById('loom-all').hidden=!LOOM.zoom;
+  // law
+  const g=LOOM.groups;let law='';
+  if(LOOM.group==='customer.acquired'&&!LOOM.zoom){const ps=g.find(x=>x.key==='Paid social'),ref=g.find(x=>x.key==='Referral');
+    law=`<b>Read it like fabric.</b> The right edge is the last 13 weeks. ${ps&&ref?`Paid social threads fray: ${Math.round(ps.still*100)}% of those who joined before August are still buying, against ${Math.round(ref.still*100)}% for referrals.`:''} The diagonal edge on the left is signups arriving over time; teal runs are subscriptions doing their quiet work.`;}
+  else if(LOOM.group==='sub'&&!LOOM.zoom)law=`<b>Subscriptions are the warp.</b> Active subscribers run unbroken to the right edge. Cancelled ones stop mid-cloth, and many never buy again once the subscription ends.`;
+  else if(LOOM.zoom)law=`<b>${esc(LOOM.zoom)}, up close.</b> ${fmt('count',g[0]?g[0].cs.length:0)} threads, oldest at the top. Hover any thread to read its story. Click the label to go back.`;
+  else law=`<b>Every customer, every week.</b> A total would say how much. The weave says who, when, and for how long: the grain is one customer-week, and nothing is summed.`;
+  document.getElementById('loom-law').innerHTML=law;
+}
+function loomRender(){loomBuild();loomDraw();}
+document.getElementById('loom-group').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;LOOM.group=b.dataset.v;LOOM.zoom=null;document.querySelectorAll('#loom-group button').forEach(x=>x.classList.toggle('on',x===b));loomRender();});
+document.getElementById('loom-gutter').addEventListener('click',e=>{const b=e.target.closest('.glab');if(!b)return;LOOM.zoom=LOOM.zoom?null:b.dataset.g;loomRender();});
+document.getElementById('loom-all').addEventListener('click',()=>{LOOM.zoom=null;loomRender();});
+function storyOf(c){
+  const so=subOf.get(c.id),n=custOrders[c.id].size;
+  let s=`<b>Customer ${c.id+1}</b> · ${esc(c.segment)} · came via ${esc(c.acquired)}<br>Joined ${c.signup===0?'before 2025':mLong(MO[c.signup])} · ${n} order${n===1?'':'s'} · ${fmt('usd',custRev[c.id],true)}`;
+  if(so)s+=`<br>${esc(so.plan)} subscription from ${mLong(MO[so.start])}${so.end!=null?', cancelled '+mLong(MO[so.end]):', still active'}`;
+  if(lastW[c.id]>=0)s+=`<br>Last bought ${mLong(MO[Math.min(END_DAY,lastW[c.id]*7)])}`;else s+='<br>Never bought';
+  return s;
+}
+const loomBox=document.getElementById('loom-box');
+loomBox.addEventListener('mousemove',e=>{const G=LOOM.geom;if(!G)return;const r=loomBox.getBoundingClientRect();const yy=e.clientY-r.top,xx=e.clientX-r.left;
+  const row=Math.floor(yy/G.H*G.totalRows);const c=LOOM.map[row];
+  const ov=document.getElementById('loom-ov'),ctx=ov.getContext('2d');ctx.clearRect(0,0,G.W,G.H);
+  if(!c){hideTip();return;}
+  const y=(row+.5)/G.totalRows*G.H;ctx.strokeStyle=css('--ink');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(c.signup/7/WEEKS*G.W,y);ctx.lineTo(G.W,y);ctx.stroke();
+  ctx.fillStyle=css('--ink');ctx.beginPath();ctx.arc(c.signup/7/WEEKS*G.W,y,3,0,Math.PI*2);ctx.fill();
+  const wk=Math.floor(xx/G.W*WEEKS);
+  showTip(storyOf(c)+`<br><span style="opacity:.7">Week of ${new Date(D0+wk*7*DAY).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})}: ${spendW[c.id*WEEKS+wk]>0?fmt('usd',spendW[c.id*WEEKS+wk],true):'nothing'}</span>`,e.clientX,e.clientY);});
+loomBox.addEventListener('mouseleave',()=>{hideTip();const G=LOOM.geom;if(G)document.getElementById('loom-ov').getContext('2d').clearRect(0,0,G.W,G.H);});
+
+/* ================================================================
+   Room 3: Briefing. Rules write claims from the engine; each claim can prove itself.
+   ================================================================ */
+const A25={m0:0,m1:9},B26={m0:12,m1:21};
+function svgSlope(W,rows,unit){
+  // rows: [{label,a,b}] two points, 2025 -> 2026
+  const h=150,l=W<440?110:150,r=W<440?110:150,x0=l,x1=W-r;const vals=rows.flatMap(x=>[x.a,x.b]);const lo=Math.min(...vals)*.9,hi=Math.max(...vals)*1.05;
+  const y=v=>12+(hi-v)/(hi-lo)*(h-34);let s='';
+  s+=`<text class="t-ax" x="${x0}" y="${h-4}" text-anchor="middle">Jan to Oct 2025</text><text class="t-ax" x="${x1}" y="${h-4}" text-anchor="middle">Jan to Oct 2026</text>`;
+  s+=`<line x1="${x0}" x2="${x0}" y1="6" y2="${h-22}" style="stroke:var(--rule)"/><line x1="${x1}" x2="${x1}" y1="6" y2="${h-22}" style="stroke:var(--rule)"/>`;
+  rows.forEach((rw,i)=>{const col=i===0?'var(--ink3)':'var(--s1)';
+    s+=`<line x1="${x0}" x2="${x1}" y1="${y(rw.a)}" y2="${y(rw.b)}" style="stroke:${col};stroke-width:2"/><circle cx="${x0}" cy="${y(rw.a)}" r="4.5" style="fill:${col};stroke:var(--panel);stroke-width:2"/><circle cx="${x1}" cy="${y(rw.b)}" r="4.5" style="fill:${col};stroke:var(--panel);stroke-width:2"/>`;
+    s+=`<text class="t-val" x="${x0-10}" y="${y(rw.a)+4}" text-anchor="end">${esc(rw.label)} ${esc(fmt(unit,rw.a))}</text><text class="t-strong" x="${x1+10}" y="${y(rw.b)+4}">${esc(fmt(unit,rw.b))} <tspan class="t-val" style="font-weight:400">${rw.b>=rw.a?'+':'−'}${Math.abs((rw.b/rw.a-1)*100).toFixed(1)}%</tspan></text>`;});
+  return `<svg viewBox="0 0 ${W} ${h}" height="${h}" role="img" aria-label="Price and cost per bag, 2025 against 2026">${s}</svg>`;
+}
+function svgDotRows(W,rows,unit,ref,refLabel){
+  const lw=W<440?92:120,vr=60,rh=28,h=rows.length*rh+30,pw=W-lw-vr;const vals=rows.map(r=>r.v).concat(ref!=null?[ref]:[]);const hi=Math.max(...vals)*1.12;
+  const x=v=>lw+v/hi*pw;let s='';
+  if(ref!=null)s+=`<line x1="${x(ref)}" x2="${x(ref)}" y1="14" y2="${h-6}" style="stroke:var(--ink3);stroke-dasharray:3 3"/><text class="t-ax" x="${x(ref)}" y="10" text-anchor="middle">${esc(refLabel)} ${esc(fmt(unit,ref))}</text>`;
+  rows.forEach((r,i)=>{const yy=24+i*rh+rh/2;const col=r.hi?'var(--s1)':'var(--ink3)';
+    s+=`<text class="${r.hi?'t-strong':'t-lab'}" x="${lw-10}" y="${yy+4}" text-anchor="end">${esc(r.label)}</text><line x1="${lw}" x2="${x(r.v)}" y1="${yy}" y2="${yy}" style="stroke:${col};stroke-width:2;opacity:.3"/><circle cx="${x(r.v)}" cy="${yy}" r="5.5" style="fill:${col};stroke:var(--panel);stroke-width:2"/><text class="t-val" x="${x(r.v)+10}" y="${yy+4}">${esc(fmt(unit,r.v))}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${h}" height="${h}" role="img">${s}</svg>`;
+}
+function svgLineBand(W,pts,band,unit,label){
+  const h=150,ml=50,mr=12,mt=10,mb=24,pw=W-ml-mr,ph=h-mt-mb;const max=Math.max(...pts.map(p=>p.v))*1.1;
+  const x=d=>ml+d/END_DAY*pw,y=v=>mt+ph-v/max*ph;let s='';
+  s+=`<rect x="${x(band[0])}" y="${mt}" width="${x(band[1])-x(band[0])}" height="${ph}" style="fill:var(--s3);opacity:.14"/><text class="t-ax" x="${(x(band[0])+x(band[1]))/2}" y="${mt+12}" text-anchor="middle" style="fill:var(--ink2)">${esc(label)}</text>`;
+  const ticks=niceTicks(0,max,3);s+=ticks.map(t=>`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" style="stroke:var(--rule2)"/><text class="t-ax" x="${ml-8}" y="${y(t)+4}" text-anchor="end">${esc(fmt(unit,t))}</text>`).join('');
+  s+=`<path d="${pts.map((p,i)=>(i?'L':'M')+x(p.d).toFixed(1)+','+y(p.v).toFixed(1)).join('')}" style="fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round"/>`;
+  s+=[0,6,12,18].map(m=>`<text class="t-ax" x="${x(mStart(m))}" y="${h-6}" text-anchor="middle">${mShort(m)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${h}" height="${h}" role="img">${s}</svg>`;
+}
+function svgBarsHi(W,items,unit,hiIdx){
+  const h=150,ml=50,mr=8,mt=10,mb=24,pw=W-ml-mr,ph=h-mt-mb;const max=Math.max(...items.map(i=>i.v));const ticks=niceTicks(0,max,3),top=ticks[ticks.length-1];
+  const band=pw/items.length,bw=Math.min(30,band*.66),y=v=>mt+ph-v/top*ph;let s='';
+  s+=ticks.map(t=>`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" style="stroke:var(--rule2)"/><text class="t-ax" x="${ml-8}" y="${y(t)+4}" text-anchor="end">${esc(fmt(unit,t))}</text>`).join('');
+  items.forEach((it,i)=>{const xx=ml+band*i+band/2-bw/2,yy=y(it.v),hh=mt+ph-yy,r=Math.min(4,bw/2);
+    s+=`<path d="M${xx},${yy+hh}V${yy+r}Q${xx},${yy} ${xx+r},${yy}H${xx+bw-r}Q${xx+bw},${yy} ${xx+bw},${yy+r}V${yy+hh}Z" style="fill:${i===hiIdx?'var(--s1)':'var(--glass)'}"/>`;
+    if(W>=440||i%2===0)s+=`<text class="t-ax" x="${xx+bw/2}" y="${h-6}" text-anchor="middle">${esc(it.label)}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${h}" height="${h}" role="img">${s}</svg>`;
+}
+function computeBrief(){
+  const C=[];
+  /* 1. margin squeeze */
+  {const mA=val('marginPct',[],[],A25),mB=val('marginPct',[],[],B26),rA=val('revenue',[],[],A25),rB=val('revenue',[],[],B26),bA=val('bags',[],[],A25),bB=val('bags',[],[],B26),gA=val('margin',[],[],A25),gB=val('margin',[],[],B26);
+   const pA=rA/bA,pB=rB/bB,cA=(rA-gA)/bA,cB=(rB-gB)/bB;
+   const wf=[{attr:'site.type',values:['Wholesale']}],wA=val('revenue',[],wf,A25)/rA,wB=val('revenue',[],wf,B26)/rB;
+   const pts=((mA-mB)*100).toFixed(1);
+   C.push({id:'margin',say:`Margin is down <strong>${pts} points</strong> this year, from ${pctS(mA)} to ${pctS(mB)}. Cost per bag rose <strong>${((cB/cA-1)*100).toFixed(1)}%</strong> while price per bag rose ${((pB/pA-1)*100).toFixed(1)}%.`,
+     meta:['Order line · one row per line sold','Jan to Oct, 2025 against 2026',fmt('count',run('orders',[],[],B26).cells.get(''))+' orders this year'],sure:'Solid',
+     proof:W=>`<h4>Price and cost per bag</h4>${svgSlope(W,[{label:'Price',a:pA,b:pB},{label:'Cost',a:cA,b:cB}],'usd')}<p>The gap between the two lines is the margin per bag, and it narrowed.</p>`,
+     wrong:`<h4>How this could be wrong</h4><p>Averages move when the mix moves, even if no price changed. Wholesale sells at a lower price and was ${pctS(wA)} of revenue in 2025 against ${pctS(wB)} in 2026, so ${Math.abs(wB-wA)<.02?'mix explains little of this':'part of the shift is mix, not price'}.</p><p>Cost here is the cost recorded on each order line, not the importer's invoices.</p>`,
+     q:`margin %  =  Σ gross margin ÷ Σ revenue, over Order line\nprice/bag =  Σ revenue ÷ Σ bags      cost/bag = (Σ revenue − Σ margin) ÷ Σ bags\nframes: Jan–Oct 2025 vs Jan–Oct 2026`,
+     next:`<h4>What I'd look at next</h4><p>Which coffees lost the most margin per bag, and whether the three biggest blends can carry a price change.</p>`});}
+  /* 2. paid social */
+  {const fr=FRAMES.l12,rr=run('returnRate',[{attr:'customer.acquired'}],[],fr);const ps=rr.cells.get('Paid social');
+   const others=ATTRS['customer.acquired'].values.filter(v=>v!=='Paid social');const ot=val('returnRate',[],[{attr:'customer.acquired',values:others}],fr);
+   const surv=new Map();for(const [c,s] of subOf){if(s.start==null||s.start>END_DAY-182)continue;const ch=customers[c].acquired;let o=surv.get(ch);if(!o){o={n:0,k:0};surv.set(ch,o);}o.n++;if(s.end==null||s.end-s.start>182)o.k++;}
+   const sv=ch=>{const o=surv.get(ch);return o&&o.n?o.k/o.n:null;};
+   let oN=0,oK=0;for(const [ch,o] of surv)if(ch!=='Paid social'){oN+=o.n;oK+=o.k;}
+   const nRet=rets.filter(r=>customers[r.c].acquired==='Paid social'&&r.mi>=fr.m0).length;
+   C.push({id:'paid',say:`Customers who came from <strong>paid social</strong> send back <strong>${(ps/ot).toFixed(1)}×</strong> as much as everyone else (${pctS(ps,2)} of what they buy, against ${pctS(ot,2)}), and only ${Math.round(sv('Paid social')*100)}% of their subscriptions last six months, against ${Math.round(oK/oN*100)}%.`,
+     meta:['Return and Order line, joined through Customer','last 12 months',fmt('count',nRet)+' separate returns'],sure:'Solid',
+     proof:W=>`<h4>Return rate by how the customer arrived</h4>${svgDotRows(W,['Paid social','Organic','Referral','Wholesale rep'].map(ch=>({label:ch,v:rr.cells.get(ch)||0,hi:ch==='Paid social'})),'pct',val('returnRate',[],[],fr),'All')}<h4 style="margin-top:12px">Subscriptions still running after six months</h4>${svgDotRows(W,['Paid social','Organic','Referral'].filter(ch=>sv(ch)!=null).map(ch=>({label:ch,v:sv(ch),hi:ch==='Paid social'})),'pct',oK/oN,'Everyone else')}`,
+     wrong:`<h4>How this could be wrong</h4><p>A return rate measured on money can be moved by a few big refunds. This one rests on ${fmt('count',nRet)} separate returns, so it isn't one bad order. Six-month survival only counts subscriptions that started at least six months before the data ends.</p>`,
+     q:`return rate = Σ refunds (Return) ÷ Σ revenue (Order line)\n  both reach "acquired via" through Return → Customer and Order line → Customer\nsurvival = subscriptions not cancelled within 182 days ÷ subscriptions started`,
+     next:`<h4>What I'd look at next</h4><p>Which coffees paid social customers send back, before anyone touches the ad budget.</p>`});}
+  /* 3. Kenya */
+  {const ken=new Set(PRODUCTS.filter(p=>p.origin==='Kenya').map(p=>p.id));
+   const kgBy=new Map();for(const r of inv){if(!ken.has(r.p))continue;kgBy.set(r.d,(kgBy.get(r.d)||0)+r.kg);}
+   const pts=[...kgBy].sort((a,b)=>a[0]-b[0]).map(([d,v])=>({d,v}));
+   const avg=(a,b)=>{const xs=pts.filter(p=>MO[p.d]>=a&&MO[p.d]<=b);return xs.reduce((s,p)=>s+p.v,0)/xs.length;};
+   const dip=avg(15,18),before=avg(3,6);
+   const kf=[{attr:'product.origin',values:['Kenya']}],nf=[{attr:'product.origin',values:ATTRS['product.origin'].values.filter(v=>v!=='Kenya')}];
+   const kA=val('revenue',[],kf,{m0:3,m1:6}),kB=val('revenue',[],kf,{m0:15,m1:18}),oA=val('revenue',[],nf,{m0:3,m1:6}),oB=val('revenue',[],nf,{m0:15,m1:18});
+   const kg=kB/kA-1,og=oB/oA-1;const held=kg>og-.05;
+   C.push({id:'kenya',say:`Kenya stock ran thin from April to July, about <strong>${Math.round((1-dip/before)*100)}% below</strong> the spring before. ${held?`Sales of the two Kenyas held up anyway (${kg>=0?'+':'−'}${Math.abs(kg*100).toFixed(0)}% on last year, against ${og>=0?'+':'−'}${Math.abs(og*100).toFixed(0)}% for everything else), so the shortage didn't show up in revenue.`:`Sales of the two Kenyas fell ${Math.abs(kg*100).toFixed(0)}% on last year while everything else moved ${og>=0?'+':'−'}${Math.abs(og*100).toFixed(0)}%.`}`,
+     meta:['Inventory count · one row per coffee, site and week','Apr to Jul 2026 against Apr to Jul 2025',`${pts.length} weekly counts`],sure:held?'Solid, with a caveat':'Solid',
+     proof:W=>`<h4>Kenya coffees on hand, all sites, each Monday</h4>${svgLineBand(W,pts,[mStart(15),mStart(19)],'kg','thin months')}`,
+     wrong:`<h4>How this could be wrong</h4><p>Stock is a snapshot, so it shows what was on the shelf on Mondays, not what ran out midweek. If customers were turned away, that never appears as an order, so "sales held up" can hide demand that was lost.</p>`,
+     q:`on hand = last weekly count in each week, Σ across Kenya coffees and sites (a snapshot, never summed over time)\nrevenue = Σ over Order line where Coffee → origin = Kenya`,
+     next:`<h4>What I'd look at next</h4><p>Whether the café sites substituted another light roast during those weeks.</p>`});}
+  /* 4. December */
+  {const mrev=[];for(let m=0;m<12;m++)mrev.push(val('revenue',[],[],{m0:m,m1:m}));const avgM=mrev.reduce((a,b)=>a+b,0)/12;
+   const lastD=Math.max(...inv.map(r=>r.d));const nowKg=inv.filter(r=>r.d===lastD).reduce((a,r)=>a+r.kg,0);
+   const ly=inv.map(r=>r.d).reduce((best,d)=>Math.abs(d-(lastD-364))<Math.abs(best-(lastD-364))?d:best,0);const lyKg=inv.filter(r=>r.d===ly).reduce((a,r)=>a+r.kg,0);
+   const ch=nowKg/lyKg-1,lift=mrev[11]/((mrev[8]+mrev[9])/2);
+   const yoy=val('revenue',[],[],{m0:19,m1:21})/val('revenue',[],[],{m0:7,m1:9})-1;
+   const stockTxt=Math.abs(ch)<.02?`about the same as the same week last year, while sales are running ${Math.round(yoy*100)}% above last year's`:`${Math.abs(ch*100).toFixed(0)}% ${ch>=0?'above':'below'} the same week last year`;
+   C.push({id:'dec',say:`December is coming. Last year it sold <strong>${lift.toFixed(2)}×</strong> the September and October before it. Stock at the last count was ${fmt('kg',nowKg,true)}, ${stockTxt}.`,
+     meta:['Order line and Inventory count','calendar 2025, and the latest Monday count','12 months, 1 snapshot'],sure:'A pattern, not a forecast',
+     proof:W=>`<h4>Revenue by month, 2025</h4>${svgBarsHi(W,mrev.map((v,m)=>({label:MLAB[m].slice(0,W<440?1:3),v})),'usd',11)}`,
+     wrong:`<h4>How this could be wrong</h4><p>One December is one data point. This is a pattern to plan around, not a forecast, and I haven't modelled growth since last year.</p>`,
+     q:`lift = revenue (Dec 2025) ÷ average of revenue (Sep 2025, Oct 2025)\nstock = Σ kg at the latest Monday count against the closest Monday 52 weeks earlier`,
+     next:`<h4>What I'd look at next</h4><p>A roast plan for December built from last year's mix by coffee.</p>`});}
+  /* 5. subscribers */
+  {const now=val('activeSubs',[],[],ALL),then=val('activeSubs',[],[],{m0:0,m1:18}),s3=val('starts',[],[],{m0:19,m1:21}),c3=val('cancels',[],[],{m0:19,m1:21});
+   C.push({id:'subs',say:`Subscribers ${now>=then?'grew':'shrank'} to <strong>${fmt('count',now)}</strong>, ${now>=then?'+':'−'}${Math.abs(now-then)} since July: ${s3} started and ${c3} cancelled in the last three months.`,
+     meta:['Subscription change · one row per start or cancel','end of Jul 2026 against end of Oct 2026',`${s3+c3} changes`],sure:'Solid',
+     proof:W=>{const pts=[];for(let m=0;m<MONTHS;m++)pts.push({d:mStart(m+1)-1,v:val('activeSubs',[],[],{m0:0,m1:m})});return `<h4>Active subscribers at each month's end</h4>${svgLineBand(W,pts,[mStart(19),END_DAY],'count','last 3 months')}`;},
+     wrong:`<h4>How this could be wrong</h4><p>A subscriber is counted from the start event to the cancel event. Paused subscriptions aren't in this model, so a pause would look like an active subscriber.</p>`,
+     q:`active = running Σ of +1 (start) and −1 (cancel), read at the period end. A balance: never summed across months.`,
+     next:`<h4>What I'd look at next</h4><p>Whether the cancellations cluster in the first two deliveries.</p>`});}
+  /* quiet checks */
+  const L3={m0:19,m1:21},P3={m0:16,m1:18};const q=[];
+  const chg=(m,a0,b0)=>val(m,[],[],a0||L3)/val(m,[],[],b0||P3)-1;
+  const aov=chg('aov');q.push(`Average order value ${aov>=0?'rose':'fell'} ${Math.abs(aov*100).toFixed(1)}% on the three months before.`);
+  const bc=chg('customers'),bcLy=chg('customers',{m0:7,m1:9},{m0:4,m1:6});q.push(`Buying customers ${bc>=0?'up':'down'} ${Math.abs(bc*100).toFixed(1)}% on the three months before. The same months last year moved ${bcLy>=0?'+':'−'}${Math.abs(bcLy*100).toFixed(1)}%.`);
+  const rv=run('revenue',[{attr:'region.name',via:'customer>region'}],[],L3),rp=run('revenue',[{attr:'region.name',via:'customer>region'}],[],P3);
+  let maxShift=0;const tL=[...rv.cells.values()].reduce((a,b)=>a+b,0),tP=[...rp.cells.values()].reduce((a,b)=>a+b,0);for(const [k,v] of rv.cells){maxShift=Math.max(maxShift,Math.abs(v/tL-(rp.cells.get(k)||0)/tP));}
+  q.push(`No region's share of revenue moved more than ${(maxShift*100).toFixed(1)} points.`);
+  {const fr=FRAMES.l12,all=val('returnRate',[],[],fr),rr=run('returnRate',[{attr:'product.roast'}],[],fr);let mx=0;for(const v of rr.cells.values())mx=Math.max(mx,Math.abs(v-all));
+   q.push(`Return rate by roast level stays within ${(mx*100).toFixed(2)} points of the overall ${pctS(all,2)} for every roast.`);}
+  return {claims:C,quiet:q};
+}
+let BRIEF=null;
+function briefRender(){
+  if(!BRIEF)BRIEF=computeBrief();
+  const el=document.getElementById('brief');
+  const n=orders.length+rets.length+subs.length+inv.length;
+  el.innerHTML=`<div class="dateline">MONDAY, NOVEMBER 23, 2026 · DATA THROUGH OCTOBER 31</div>
+   <h3 class="greet">Good morning. Five things changed, and one of them needs a decision.</h3>
+   <p class="lede">I read ${fmt('count',n)} events overnight. Here's what moved, in order of what it costs you. Ask any line to prove itself.</p>
+   ${BRIEF.claims.map((c,i)=>`<article class="claim" data-c="${c.id}"><div class="num">${String(i+1).padStart(2,'0')}</div><p class="say">${c.say}</p>
+     <div class="meta"><span class="sure">${esc(c.sure)}</span>${c.meta.map(m=>`<span>${esc(m)}</span>`).join('')}</div>
+     <div class="acts"><button data-p="proof">Show me</button><button data-p="wrong">How could this be wrong?</button><button data-p="q">How did you count it?</button><button data-p="next">What next?</button></div>
+     <div class="pane" data-pane="proof"></div><div class="pane" data-pane="wrong">${c.wrong}</div><div class="pane" data-pane="q"><h4>The query, in the graph's words</h4><div class="q">${esc(c.q)}</div></div><div class="pane" data-pane="next">${c.next}</div></article>`).join('')}
+   <div class="quiet"><h3>Looked at, nothing to report</h3><ul>${BRIEF.quiet.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  openPane(el.querySelector('.claim'),'proof');
+}
+function openPane(art,p){
+  const c=BRIEF.claims.find(x=>x.id===art.dataset.c);
+  art.querySelectorAll('.acts button').forEach(b=>{const on=b.dataset.p===p&&!b.classList.contains('on');b.classList.toggle('on',on);});
+  const isOn=art.querySelector(`.acts button[data-p="${p}"]`).classList.contains('on');
+  art.querySelectorAll('.pane').forEach(x=>x.classList.toggle('on',isOn&&x.dataset.pane===p));
+  if(isOn&&p==='proof'){const pane=art.querySelector('[data-pane="proof"]');pane.innerHTML='';const W=Math.max(280,(pane.clientWidth||600)-32);pane.innerHTML=c.proof(W);}
+}
+document.getElementById('brief').addEventListener('click',e=>{const b=e.target.closest('.acts button');if(!b)return;openPane(b.closest('.claim'),b.dataset.p);});
+
+/* ================================================================
+   Rooms
+   ================================================================ */
+let ROOM='sediment';const seen={};
+function showRoom(r){ROOM=r;document.querySelectorAll('nav.rooms button').forEach(b=>b.setAttribute('aria-selected',b.dataset.room===r));document.querySelectorAll('.room').forEach(s=>s.classList.toggle('on',s.id==='room-'+r));
+  hideTip();
+  if(r==='sediment'){sedSetup();sedRun(!!seen.sediment);}
+  if(r==='loom')loomRender();
+  if(r==='briefing')briefRender();
+  seen[r]=1;
+  try{history.replaceState(null,'','#'+r);}catch(_){}
+}
+document.querySelector('nav.rooms').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showRoom(b.dataset.room);});
+let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(ROOM==='sediment'){if(SED.mode==='water')drawWater();else if(!SED.anim)sedRun(true);}if(ROOM==='loom')loomDraw();},150);}).observe(document.querySelector('main'));
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>showRoom(ROOM));}catch(_){}
+const start=(location.hash||'').slice(1);
+showRoom(['sediment','loom','briefing'].includes(start)?start:'sediment');
+</script>
+
+</body></html>

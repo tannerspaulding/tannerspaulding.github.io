@@ -263,12 +263,12 @@ p{margin:0;max-width:60ch}
   </div>
   <ul class="rooms">
     <li class="feat"><span class="n">06</span><h4><em>Descent</em></h4><span class="c">Front runner</span><p>Tap the biggest block and drop a floor, until you reach the rows behind the number.</p><p><button class="go" data-zoom><i></i>Try it</button></p></li>
-    <li><span class="n">01</span><h4>Grain Graph</h4><span class="c">v1</span><p>The first try: every number drawn at its own grain.</p></li>
-    <li><span class="n">02</span><h4>Sediment</h4><span class="c">Round 2</span><p>Change laid down in layers, newest on top.</p></li>
-    <li><span class="n">03</span><h4>Loom</h4><span class="c">Round 2</span><p>Drivers as threads you can pull on.</p></li>
-    <li><span class="n">04</span><h4>Briefing</h4><span class="c">Round 2</span><p>The same answer, written as a morning note.</p></li>
-    <li><span class="n">05</span><h4>Cells</h4><span class="c">Round 3</span><p>One small cell per slice, laid out in a grid.</p></li>
-    <li><span class="n">07</span><h4>Sky</h4><span class="c">Round 3</span><p>The view from below, looking up at the total.</p></li>
+    <li><span class="n">01</span><h4>Grain Graph</h4><span class="c">v1</span><p>The first try: ask in plain words, and a small model picks the fields and the grain to answer.</p><p><button class="go" data-zoom data-src="futobi/grain-graph.html" data-name="Grain Graph" data-num="03.1"><i></i>Try it</button></p></li>
+    <li><span class="n">02</span><h4>Sediment</h4><span class="c">Round 2</span><p>Change settles like sand in jars, so you can see what piled up where.</p><p><button class="go" data-zoom data-src="futobi/sketches.html" data-room="sediment" data-name="Sediment" data-num="03.2"><i></i>Try it</button></p></li>
+    <li><span class="n">03</span><h4>Loom</h4><span class="c">Round 2</span><p>Every customer a thread, every week a stitch. Pull one and see what it carries.</p><p><button class="go" data-zoom data-src="futobi/sketches.html" data-room="loom" data-name="Loom" data-num="03.3"><i></i>Try it</button></p></li>
+    <li><span class="n">04</span><h4>Briefing</h4><span class="c">Round 2</span><p>The same answer as a morning note, where every claim can show its working.</p><p><button class="go" data-zoom data-src="futobi/sketches.html" data-room="briefing" data-name="Briefing" data-num="03.4"><i></i>Try it</button></p></li>
+    <li><span class="n">05</span><h4>Cells</h4><span class="c">Round 3</span><p>Circles inside circles, a power of ten at a time, down to a single order line.</p><p><button class="go" data-zoom data-src="futobi/flight.html" data-room="cells" data-name="Cells" data-num="03.5"><i></i>Try it</button></p></li>
+    <li><span class="n">07</span><h4>Sky</h4><span class="c">Round 3</span><p>Every measure a star. Fly closer and each one comes apart into the stars it is made of.</p><p><button class="go" data-zoom data-src="futobi/flight.html" data-room="sky" data-name="Sky" data-num="03.7"><i></i>Try it</button></p></li>
   </ul>
 </section>
 <p class="stamp">Futobi Labs · Tanner Spaulding · synthetic and sample data only, nothing from a client</p>
@@ -340,13 +340,25 @@ document.querySelectorAll('.win').forEach(win=>{
     raf=requestAnimationFrame(drift);}
   fr.addEventListener('load',()=>{doc=prep(fr,hide,false);setTimeout(()=>{fr.classList.add('ready');if(!reduce&&on&&!raf)raf=requestAnimationFrame(drift)},doc?900:300)});
   function start(){if(started)return;started=true;fr.src=src;
-    if(exp&&!exp.src){exp.dataset.hide=hide;exp.src=src}}
+    if(exp&&!exp.src){exp.dataset.hide=hide;exp.dataset.base=src;exp.src=src}}
   if('IntersectionObserver' in window){new IntersectionObserver(es=>es.forEach(e=>{on=e.isIntersecting;if(on){start();if(!reduce&&doc&&!raf)setTimeout(()=>{if(on&&!raf)raf=requestAnimationFrame(drift)},400)}else if(raf){cancelAnimationFrame(raf);raf=0}}),{rootMargin:'200px'}).observe(win)}
   else start();
 });
 if(exp){exp.addEventListener('load',()=>prep(exp,exp.dataset.hide,true));
-  /* the cover dot opens the same room; make sure the experience is loading */
-  document.addEventListener('click',e=>{if(e.target.closest('[data-zoom]')&&!exp.src){const w=document.querySelector('.win');if(w){exp.dataset.hide=w.dataset.hide||'';exp.src=w.dataset.src}}},true);
+  /* Every way in opens the same room. A button can name its own experience with data-src,
+     and a room inside it with data-room; anything else opens the featured window's experience. */
+  const rk=room.querySelector('.rtop .k'),rb=rk&&rk.querySelector('b'),rs=rk&&rk.querySelector('span');
+  const def={num:rb?rb.textContent:'',txt:rs?rs.textContent:'',lab:room.getAttribute('aria-label')||'',tt:exp.title};
+  function label(el){const n=el&&el.dataset.name;
+    if(rb)rb.textContent=n?el.dataset.num||def.num:def.num;
+    if(rs)rs.textContent=n?def.txt.replace(/[^·]*$/,' '+n):def.txt;
+    room.setAttribute('aria-label',n||def.lab);exp.title=n||def.tt;}
+  exp.addEventListener('load',()=>{exp.style.visibility=''});
+  document.addEventListener('click',e=>{const z=e.target.closest('[data-zoom]');if(!z)return;
+    const t=z.dataset.src?z:document.querySelector('.win');if(!t)return;
+    const src=t.dataset.src,rm=z.dataset.room||'';label(z.dataset.src?z:null);
+    if(exp.src&&exp.dataset.base===src){if(rm){try{exp.contentWindow.showRoom(rm)}catch(_){}}return}
+    exp.dataset.hide=t.dataset.hide||'';exp.dataset.base=src;exp.style.visibility='hidden';exp.src=src+(rm?'#'+rm:'');},true);
   window.onRoom=()=>{try{exp.contentWindow.focus()}catch(e){}};}
 })();
 
