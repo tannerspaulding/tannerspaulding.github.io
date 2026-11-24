@@ -1,10 +1,5 @@
 # tannerspaulding.github.io
 
-Home page for tannerspaulding.com, currently the Futobi Labs home (Test Print look). `futobi/descent.html` is the Descent prototype shown in its live window. Published by GitHub Pages straight from the `main` branch on every push. The `CNAME` file sets the custom domain.
+Home page for tannerspaulding.com. For now it forwards to the Futobi Labs home at https://labs.tannerspaulding.com until the personal site is written. The `CNAME` file sets the custom domain.
 
-The labs are separate repos and appear under this domain automatically as project sites:
-
-- [Data Model Lab](https://github.com/tannerspaulding/datamodel-lab) at `/datamodel-lab/`
-- [Data Viz Lab](https://github.com/tannerspaulding/dataviz-lab) at `/dataviz-lab/`
-
-To add a lab: create a public repo, publish it with GitHub Pages, and add a card to `index.html`.
+The labs moved to the futobi-labs organization. `404.html` and the `dataviz-lab/` and `datamodel-lab/` stubs forward old tannerspaulding.com lab links (any page under those paths, and `/futobi/`) to the same path on labs.tannerspaulding.com.
