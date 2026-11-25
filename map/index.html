@@ -64,7 +64,7 @@ button,a{font:inherit;color:inherit}
 .shelf.sub{background:var(--paper)}
 .shelf.sub .shd b{font-size:12px}
 .rhd{position:absolute;left:12px;right:12px;top:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.rhd b{font:850 40px/.84 var(--disp);font-variation-settings:"wdth" 62;text-transform:uppercase;letter-spacing:-.01em}
+.rhd b{white-space:nowrap;font:850 40px/.84 var(--disp);font-variation-settings:"wdth" 62;text-transform:uppercase;letter-spacing:-.01em}
 .rhd span{font:500 8px/1.35 var(--mono);letter-spacing:.12em;text-transform:uppercase;text-align:right;padding-top:2px;opacity:.9}
 .shelf{background:var(--paper2);color:var(--ink);border:1.2px solid var(--ink)}
 .shd{position:absolute;left:8px;right:8px;top:7px;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
@@ -142,7 +142,7 @@ function draw(){
   const cell=c=>`<div class="it" data-k="${esc(c.key)}" style="left:${c.x}px;top:${c.y}px;width:${c.w}px;height:${c.h}px">${img(c.it)}<i>${esc(c.it.title)}</i></div>`;
   const pos=b=>`left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px`;
   const html=b=>{const n=b.node,inner=(b.cells||[]).map(cell).join('')+(b.kids||[]).map(html).join('');
-    if(b.d===1){const fs=Math.min(40,(b.w-24)/((n.name.length+1)*.46)),meta=`${n.kids.length} shelves<br>${leaves(n)} explorations`;
+    if(b.d===1){const fs=Math.min(40,(b.w-24-(b.w>=320?120:0))/((n.name.length+1)*.46)),meta=`${n.kids.length} shelves<br>${leaves(n)} explorations`;
       return `<div class="room ${n.tone}" data-k="${esc(b.key)}" style="${pos(b)}"><div class="rhd"><b style="font-size:${fs.toFixed(1)}px">${esc(n.name)}.</b>${b.w>=320?`<span>${meta}</span>`:''}</div>${inner}</div>`}
     return `<div class="shelf${b.d>2?' sub':''}" data-k="${esc(b.key)}" style="${pos(b)}"><div class="shd"><b>${esc(n.name)}</b><span>${leaves(n)}</span></div>${inner}</div>`};
   const w=document.getElementById('world');w.style.cssText=`width:${L.W}px;height:${L.H}px`;w.innerHTML=L.root.kids.map(html).join('');
