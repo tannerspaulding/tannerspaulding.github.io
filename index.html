@@ -188,6 +188,7 @@ p{margin:0;max-width:60ch}
 .cover h1{font-size:clamp(72px,24vw,210px)}
 .rooms li.feat .c{color:var(--ink);background:var(--ochre);padding:3px 6px}
 .win{--wacc:var(--ochre)}
+.win.silo{--wacc:var(--sun);cursor:pointer}
 .cover .wrap{padding-block:40px 24px}
 .name{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--fg);justify-self:start;max-width:100%}
 .name div{display:grid;gap:4px;padding:10px 14px 9px;border-right:1.5px solid var(--fg)}
@@ -278,6 +279,22 @@ p{margin:0;max-width:60ch}
     <li><span class="n">07</span><h4>Sky</h4><span class="c">Round 3</span><p>Every measure a star. Fly closer and each one comes apart into the stars it is made of.</p><p><button class="go" data-zoom data-src="futobi/flight.html" data-room="sky" data-name="Sky" data-num="03.7"><i></i>Try it</button></p></li>
   </ul>
 </section>
+<section class="sec" id="broken-silo">
+  <div class="sh"><h3>Broken Silo</h3><span>art, music and data</span></div>
+  <div class="prose"><p>Data you can hear and see. Each track on Broken Silo takes one public dataset and turns it into something you play by dragging across the screen. It's the same work as the labs, pointed at sound.</p></div>
+  <a class="win silo" href="https://broken-silo.com/" data-src="https://broken-silo.com/" data-ext aria-label="Open Broken Silo">
+    <i class="crop tl"></i><i class="crop tr"></i><i class="crop bl"></i><i class="crop br"></i>
+    <div class="win-bar"><span class="live">Live</span><span class="t"><b>04</b> · Broken Silo · Test press</span><span class="win-go"><i></i>Open ↗</span></div>
+    <div class="win-view"><iframe tabindex="-1" aria-hidden="true" title="Preview of Broken Silo"></iframe><span class="orb" aria-hidden="true">Play</span></div>
+    <div class="win-cap"><b>Four tracks, four public datasets</b><span>The real site in its own style · turn your sound on</span></div>
+  </a>
+  <ul class="rooms">
+    <li><span class="n">i</span><h4>Arrivals</h4><span class="c">U.S. births</span><p>Every day of the year is a string, as long as the number of babies born on it.</p></li>
+    <li><span class="n">ii</span><h4>Twelve Hundred Springs</h4><span class="c">Kyoto</span><p>Kyoto's cherry blossoms, every recorded spring since 812.</p></li>
+    <li><span class="n">iii</span><h4>Weathering</h4><span class="c">Rain</span><p>Ten homes, one year of rain from each, as beat pads.</p></li>
+    <li><span class="n">iv</span><h4>Trash Wheel</h4><span class="c">Baltimore</span><p>Every dumpster Baltimore's trash wheels pulled from the harbor.</p></li>
+  </ul>
+</section>
 <p class="stamp">Futobi Labs · Tanner Spaulding · synthetic and sample data only, nothing from a client</p>
 </div>
 </main>
@@ -359,7 +376,7 @@ document.querySelectorAll('.win').forEach(win=>{
     raf=requestAnimationFrame(drift);}
   fr.addEventListener('load',()=>{doc=prep(fr,hide,false);setTimeout(()=>{fr.classList.add('ready');if(!reduce&&on&&!raf)raf=requestAnimationFrame(drift)},doc?900:300)});
   function start(){if(started)return;started=true;fr.src=src;
-    if(exp&&!exp.src){exp.dataset.hide=hide;exp.dataset.base=src;exp.src=src}}
+    if(exp&&!exp.src&&!('ext' in win.dataset)){exp.dataset.hide=hide;exp.dataset.base=src;exp.src=src}}
   if('IntersectionObserver' in window){new IntersectionObserver(es=>es.forEach(e=>{on=e.isIntersecting;if(on){start();if(!reduce&&doc&&!raf)setTimeout(()=>{if(on&&!raf)raf=requestAnimationFrame(drift)},400)}else if(raf){cancelAnimationFrame(raf);raf=0}}),{rootMargin:'200px'}).observe(win)}
   else start();
 });
