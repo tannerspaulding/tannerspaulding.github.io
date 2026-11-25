@@ -124,13 +124,19 @@ p{margin:0;max-width:60ch}
 .hud .nm{min-width:0}
 .hud .nm b{display:block;font:750 14px/1.15 var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bars{display:flex;gap:4px;margin-top:5px}
-.bars a{flex:1;min-width:0;height:22px;display:grid;place-items:center;text-decoration:none}
+.bars a{flex:1;min-width:0;height:30px;display:grid;place-items:center;align-content:center;gap:4px;text-decoration:none;color:var(--soft)}
+.bars a::after{content:attr(data-k);font:500 9px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.bars a[aria-current]{color:var(--ink)}
 .bars a::before{content:"";width:100%;max-width:44px;height:4px;background:rgba(29,27,24,.25)}
 .bars a[aria-current]::before{background:var(--sun);height:8px}
 .hud .hint{display:block;font:500 9.5px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hud .home{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;text-decoration:none;font:600 16px/1 var(--disp)}
 .hud .home:hover{background:var(--ink);color:var(--paper)}
-@media (min-width:760px){.hud{left:50%;right:auto;transform:translateX(-50%);width:min(680px,calc(100vw - 40px))}}
+.hud{transform:translate(var(--hx,0),var(--hy,0));transition:transform .28s ease,opacity .28s ease}
+.hud.tuck{--hy:calc(100% + 24px);opacity:0;pointer-events:none}
+.hud.tuck:focus-within{--hy:0;opacity:1;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){.hud{transition:none}}
+@media (min-width:760px){.hud{left:50%;right:auto;--hx:-50%;width:min(680px,calc(100vw - 40px))}}
 .stamp{font:500 10px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--soft);padding-block:26px 0}
 @media (prefers-reduced-motion:reduce){.seed::after{animation:none}.room{transition:none}}
 
@@ -278,16 +284,28 @@ p{margin:0;max-width:60ch}
 
 <section class="room full" id="room" aria-hidden="true" role="dialog" aria-label="Descent">
   <div class="rtop"><div class="wrap"><div class="k" style="color:var(--soft)"><b style="background:var(--ink);color:var(--paper)">03.6</b><span>Futobi Labs · Prototypes · Descent</span></div>
-    <div class="side"><nav class="rbars" aria-label="Labs"><a href="https://labs.tannerspaulding.com/dataviz-lab/" aria-label="Data Viz Lab"></a><a href="https://labs.tannerspaulding.com/datamodel-lab/" aria-label="Data Model Lab"></a><a href="/" aria-current="page" aria-label="Futobi Labs"></a></nav><button class="pill" data-close>↑ Back out</button></div></div></div>
+    <div class="side"><nav class="rbars" aria-label="Labs"><a href="/" aria-current="page" aria-label="Futobi Labs"></a><a href="https://labs.tannerspaulding.com/dataviz-lab/" aria-label="Data Viz Lab"></a><a href="https://labs.tannerspaulding.com/datamodel-lab/" aria-label="Data Model Lab"></a></nav><button class="pill" data-close>↑ Back out</button></div></div></div>
   <iframe class="exp" title="Descent"></iframe>
 </section>
 
 <nav class="hud" aria-label="Labs">
-  <div class="num">00<small>/03</small></div>
-  <div class="nm"><b>Futobi Labs</b><div class="bars"><a href="https://labs.tannerspaulding.com/dataviz-lab/" aria-label="Data Viz Lab"></a><a href="https://labs.tannerspaulding.com/datamodel-lab/" aria-label="Data Model Lab"></a><a href="/" aria-current="page" aria-label="Futobi Labs"></a></div></div>
+  <div class="num">00</div>
+  <div class="nm"><b>Futobi Labs</b><div class="bars"><a href="/" aria-current="page" aria-label="Futobi Labs" data-k="00 Futobi"></a><a href="https://labs.tannerspaulding.com/dataviz-lab/" aria-label="Data Viz Lab" data-k="01 Viz"></a><a href="https://labs.tannerspaulding.com/datamodel-lab/" aria-label="Data Model Lab" data-k="02 Model"></a></div></div>
   <a class="home" href="https://github.com/tannerspaulding" rel="noopener" aria-label="Tanner Spaulding on GitHub">↗</a>
 </nav>
 
+<script>
+/* lab bar: out of the way while you read; back on scroll up and at the end */
+(function(){
+const hud=document.querySelector('.hud');if(!hud)return;let last=scrollY;
+function end(){return scrollY+innerHeight>=document.documentElement.scrollHeight-60}
+function fits(){return document.documentElement.scrollHeight<=innerHeight+60}
+if(!fits())hud.classList.add('tuck');
+addEventListener('scroll',function(){const y=scrollY,d=y-last;
+  if(end()||d<-6)hud.classList.remove('tuck');else if(d>6)hud.classList.add('tuck');
+  if(Math.abs(d)>6)last=y;},{passive:true});
+})();
+</script>
 <script>
 /* Test Print shell: zoom through a dot into a room, and back out */
 (function(){
