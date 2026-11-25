@@ -124,9 +124,9 @@ canvas{display:block;width:100%}
   <span class="sub2">Invented sample: Larkspur Roasting Co., Jan 2025 to Oct 2026</span>
 </div>
 <div class="wrap"><nav class="rooms" role="tablist" aria-label="Sketches">
-  <button role="tab" data-room="sediment" aria-selected="true"><span class="n">01</span><b>Sediment</b><span>The contract becomes physics. Amounts pile, rates tint, levels fill, people can't be in two jars.</span></button>
-  <button role="tab" data-room="loom" aria-selected="false"><span class="n">02</span><b>Loom</b><span>No totals. Every customer is a thread and every week a stitch, so you see who stays.</span></button>
-  <button role="tab" data-room="briefing" aria-selected="false"><span class="n">03</span><b>Briefing</b><span>An agent reads the data and writes to you. A picture appears only to prove a claim.</span></button>
+  <button role="tab" data-room="sediment" aria-selected="true" hidden><span class="n">01</span><b>Sediment</b><span>The contract becomes physics. Amounts pile, rates tint, levels fill, people can't be in two jars.</span></button>
+  <button role="tab" data-room="loom" aria-selected="false" hidden><span class="n">02</span><b>Loom</b><span>No totals. Every customer is a thread and every week a stitch, so you see who stays.</span></button>
+  <button role="tab" data-room="briefing" aria-selected="false"><span class="n">01</span><b>Briefing</b><span>An agent reads the data and writes to you. A picture appears only to prove a claim.</span></button>
 </nav></div></header>
 
 <main class="wrap">
@@ -927,7 +927,7 @@ document.querySelector('nav.rooms').addEventListener('click',e=>{const b=e.targe
 let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(ROOM==='sediment'){if(SED.mode==='water')drawWater();else if(!SED.anim)sedRun(true);}if(ROOM==='loom')loomDraw();},150);}).observe(document.querySelector('main'));
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>showRoom(ROOM));}catch(_){}
 const start=(location.hash||'').slice(1);
-showRoom(['sediment','loom','briefing'].includes(start)?start:'sediment');
+showRoom(['sediment','loom','briefing'].includes(start)?start:'briefing');
 </script>
 
 </body></html>
