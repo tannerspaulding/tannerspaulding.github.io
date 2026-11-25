@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Map · Futobi Labs</title>
+<meta name="description" content="Every Futobi Labs exploration on one zoomable map: idea explorations, projects and references.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* One canvas, laid out once. A camera zooms over it: labs -> room -> shelf -> exploration.
+   Test Print look, single light theme by choice. World units are px at scale 1. */
+:root{
+  --paper:#EFE9DD; --paper2:#F6F2EA; --ink:#1D1B18; --stone:#CBC4B6; --soft:#5E5A52;
+  --cobalt:#1F3FD1; --ochre:#C08A22; --sun:#D2592C;
+  --disp:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--disp);-webkit-font-smoothing:antialiased}
+button,a{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--sun);outline-offset:2px}
+.k{font:500 10.5px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase}
+
+/* chrome: top bar and bottom sheet are fixed and never scale */
+.bar{position:fixed;inset:0 0 auto;z-index:5;background:var(--paper);border-bottom:1.5px solid var(--ink);padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.bar .in{display:flex;align-items:stretch;height:48px}
+.out{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-right:1.5px solid var(--ink);background:var(--ink);color:var(--paper2);padding:0 14px;min-width:52px;cursor:pointer}
+.out[disabled]{background:var(--paper);color:var(--stone);cursor:default}
+.out svg{width:18px;height:18px}
+.out .k{display:none}
+@media (min-width:640px){.out .k{display:inline}}
+.crumbs{flex:1 1 auto;min-width:0;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;padding:0 12px;white-space:nowrap}
+.crumbs::-webkit-scrollbar{display:none}
+.crumbs a{text-decoration:none;font:800 16px/1 var(--disp);font-variation-settings:"wdth" 75;text-transform:uppercase;padding:6px 1px}
+.crumbs a[aria-current]{color:var(--sun)}
+.crumbs .sep{font:500 13px var(--mono);color:var(--stone);padding:0 7px}
+.stampw{flex:0 0 auto;display:flex;align-items:center;padding:0 12px;border-left:1.5px solid var(--ink)}
+.stamp{background:var(--ink);color:var(--paper2);padding:3px 7px;text-decoration:none}
+
+.sheet{position:fixed;inset:auto 0 0;z-index:5;background:var(--paper);border-top:1.5px solid var(--ink);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet .in{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:center;min-height:62px}
+.sheet h1{margin:0;font:850 24px/.95 var(--disp);font-variation-settings:"wdth" 70;text-transform:uppercase;text-wrap:balance}
+.sheet p{margin:3px 0 0;font-size:14px;line-height:1.35;color:var(--soft);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sheet .k{color:var(--soft)}
+.acts{display:flex;gap:6px;align-items:center}
+.acts button,.acts a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 12px;border:1.5px solid var(--ink);background:var(--paper2);text-decoration:none;cursor:pointer;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.acts .open{background:var(--ink);color:var(--paper2)}
+.acts button[disabled]{opacity:.3;cursor:default}
+
+/* the canvas */
+#vp{position:fixed;inset:0;touch-action:none;cursor:zoom-in;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#vp.grab{cursor:grabbing}
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+#world.moving{will-change:transform}
+.room,.shelf,.it{position:absolute}
+.room{border:1.5px solid var(--ink)}
+.room.orig{background:var(--sun);color:var(--ink)}
+.room.applied{background:var(--cobalt);color:var(--paper2)}
+.room.refs{background:var(--stone);color:var(--ink)}
+.room.refs .rhd b{font-weight:700}
+.shelf.sub{background:var(--paper)}
+.shelf.sub .shd b{font-size:12px}
+.rhd{position:absolute;left:12px;right:12px;top:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.rhd b{font:850 40px/.84 var(--disp);font-variation-settings:"wdth" 62;text-transform:uppercase;letter-spacing:-.01em}
+.rhd span{font:500 8px/1.35 var(--mono);letter-spacing:.12em;text-transform:uppercase;text-align:right;padding-top:2px;opacity:.9}
+.shelf{background:var(--paper2);color:var(--ink);border:1.2px solid var(--ink)}
+.shd{position:absolute;left:8px;right:8px;top:7px;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.shd b{font:800 14px/1 var(--disp);font-variation-settings:"wdth" 70;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shd span{font:500 7px var(--mono);letter-spacing:.1em;color:var(--soft)}
+.it{background:var(--paper2);color:var(--ink);border:1.2px solid var(--ink);overflow:hidden}
+.it img{display:block;width:100%;object-fit:cover;background:var(--stone);border-bottom:1.2px solid var(--ink);pointer-events:none}
+.it i{display:block;font:750 8px/1.12 var(--disp);font-style:normal;padding:4px 5px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it.on{outline:2px solid var(--sun);outline-offset:1.5px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head><body>
+
+<div id="vp" aria-label="Futobi Labs, a zoomable map of every exploration" role="region"><div id="world"></div></div>
+
+<nav class="bar" aria-label="Where you are"><div class="in">
+  <button class="out" id="out" type="button" aria-label="Zoom out"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l4.5 4.5M4.5 6.5h4"/></svg><span class="k">Zoom out</span></button>
+  <div class="crumbs" id="crumbs"></div>
+  <div class="stampw"><a class="k stamp" href="/">Home</a></div>
+</div></nav>
+
+<section class="sheet" aria-live="polite"><div class="in" id="sheet"></div></section>
+
+<script>
+const ITEMS=[{"id": "descent", "group": "viz", "shelf": "Prototypes", "title": "Descent", "desc": "Tap the biggest block and drop a floor, until you reach the rows behind the number.", "url": "/futobi/descent.html"}, {"id": "grain-graph", "group": "viz", "shelf": "Prototypes", "title": "Grain Graph", "desc": "Ask in plain words, and a small model picks the fields and the grain to answer.", "url": "/futobi/grain-graph.html"}, {"id": "briefing", "group": "viz", "shelf": "Prototypes", "title": "Briefing", "desc": "The same answer as a morning note, where every claim can show its working.", "url": "/futobi/sketches.html#briefing"}, {"id": "heartbeat", "group": "viz", "shelf": "Engineer's eye", "title": "The nightly heartbeat", "desc": "A year of nightly load finish times in one strip, any night opened task by task.", "url": "https://labs.tannerspaulding.com/dataviz-lab/engineer/heartbeat.html"}, {"id": "transit", "group": "viz", "shelf": "Engineer's eye", "title": "Lineage as a transit map", "desc": "Source systems as lines, tables as stations, shared tables as interchanges.", "url": "https://labs.tannerspaulding.com/dataviz-lab/engineer/lineage.html"}, {"id": "constellation", "group": "viz", "shelf": "Engineer's eye", "title": "Star schemas, taken literally", "desc": "Facts as constellations, shared dimensions as the stars they have in common.", "url": "https://labs.tannerspaulding.com/dataviz-lab/engineer/constellation.html"}, {"id": "dq-calendar", "group": "viz", "shelf": "Engineer's eye", "title": "A year of tests", "desc": "Every data quality result on a calendar, with the test that cries wolf.", "url": "https://labs.tannerspaulding.com/dataviz-lab/engineer/dq-calendar.html"}, {"id": "schema-drift", "group": "viz", "shelf": "Engineer's eye", "title": "Schema drift", "desc": "Every table's columns over a year, and how long a new one takes to reach Gold.", "url": "https://labs.tannerspaulding.com/dataviz-lab/engineer/schema-drift.html"}, {"id": "report", "group": "viz", "shelf": "Pressroom", "title": "The report page", "desc": "A year of nightly loads on one page, with Power BI notes for every tile.", "url": "https://labs.tannerspaulding.com/dataviz-lab/pressroom/report.html"}, {"id": "system", "group": "viz", "shelf": "Pressroom", "title": "The system", "desc": "Eight blocks, eight data inks, four textures, checked for contrast in light and dark.", "url": "https://labs.tannerspaulding.com/dataviz-lab/pressroom/system.html"}, {"id": "bullets", "group": "viz", "shelf": "Stephen Few", "title": "Bullet graphs", "desc": "Six KPIs to Few's own spec, and what the same six would cost as gauges.", "url": "https://labs.tannerspaulding.com/dataviz-lab/few/bullet-graphs.html"}, {"id": "dashboard", "group": "viz", "shelf": "Stephen Few", "title": "One-screen dashboard", "desc": "A sales dashboard after Information Dashboard Design.", "url": "https://labs.tannerspaulding.com/dataviz-lab/few/dashboard.html"}, {"id": "table-or-graph", "group": "viz", "shelf": "Stephen Few", "title": "Table or graph", "desc": "A table for lookup, a graph for pattern, and a pie rebuilt as sorted bars.", "url": "https://labs.tannerspaulding.com/dataviz-lab/few/table-or-graph.html"}, {"id": "sparklines", "group": "viz", "shelf": "Tufte", "title": "Sparklines", "desc": "Word-sized graphics in running prose, a dense table and win-loss bars.", "url": "https://labs.tannerspaulding.com/dataviz-lab/tufte/sparklines.html"}, {"id": "slopegraph", "group": "viz", "shelf": "Tufte", "title": "Slopegraph", "desc": "A city budget, two years, fifteen departments, values or ranks.", "url": "https://labs.tannerspaulding.com/dataviz-lab/tufte/slopegraph.html", "pos": "50% 15%"}, {"id": "multiples", "group": "viz", "shelf": "Tufte", "title": "Small multiples", "desc": "Anscombe's quartet, 24 climates on one scale, and a dot-dash plot.", "url": "https://labs.tannerspaulding.com/dataviz-lab/tufte/small-multiples.html"}, {"id": "scrolly", "group": "viz", "shelf": "New", "title": "One cohort, six views", "desc": "A thousand applicants regroup six times as you scroll.", "url": "https://labs.tannerspaulding.com/dataviz-lab/new/scrollytelling.html", "pos": "60% 50%"}, {"id": "uncertainty", "group": "viz", "shelf": "New", "title": "Uncertainty you can feel", "desc": "Outcome plots, a quantile dotplot with a draggable deadline, a fan chart.", "url": "https://labs.tannerspaulding.com/dataviz-lab/new/uncertainty.html"}, {"id": "linked", "group": "viz", "shelf": "New", "title": "Linked views", "desc": "Brush one chart and four others follow, across 2,000 rides.", "url": "https://labs.tannerspaulding.com/dataviz-lab/new/linked-views.html", "pos": "50% 20%"}, {"id": "lineage-flow", "group": "model", "shelf": "Explorations", "title": "Lineage flow", "desc": "Every table from source to report, as a Sankey.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/lineage-flow.html"}, {"id": "column-lineage", "group": "model", "shelf": "Explorations", "title": "Column lineage tracer", "desc": "Click any column or measure and trace it upstream and down.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/column-lineage.html"}, {"id": "star-schema", "group": "model", "shelf": "Explorations", "title": "Star schema explorer", "desc": "Each fact at its grain, its dimensions, and the role-playing relationships.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/star-schema.html"}, {"id": "medallion", "group": "model", "shelf": "Explorations", "title": "Medallion stack", "desc": "A zoomable stack of the lakehouse: layer, table, column.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/medallion-stack.html", "pos": "50% 20%"}, {"id": "bus-matrix", "group": "model", "shelf": "Explorations", "title": "Bus matrix", "desc": "Facts against shared dimensions, as a matrix you can click through.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/bus-matrix.html", "pos": "50% 60%"}, {"id": "engine", "group": "model", "shelf": "Explorations", "title": "Engine layer cake", "desc": "Follow a report visual down through DAX, the engine, Direct Lake and Delta files.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/engine-layers.html"}, {"id": "synthesis", "group": "model", "shelf": "Explorations", "title": "Data synthesis", "desc": "Fly through 2,400 glass panes as data settles into tables and reports.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/synthesis.html"}, {"id": "semantic", "group": "model", "shelf": "Explorations", "title": "Semantic engine", "desc": "Inside the model and the engine that answers it.", "url": "https://labs.tannerspaulding.com/datamodel-lab/explore/semantic-engine.html"}, {"id": "guide", "group": "model", "shelf": "Reading", "title": "Field Guide", "desc": "Medallion, dimensional modeling, slowly changing dimensions and more, in nine pages.", "url": "https://labs.tannerspaulding.com/datamodel-lab/guide/"}, {"id": "model", "group": "model", "shelf": "Reading", "title": "Sample model", "desc": "The one small model every exploration reads, and how to swap in your own.", "url": "https://labs.tannerspaulding.com/datamodel-lab/model/"}, {"id": "arrivals", "group": "silo", "shelf": "Test press", "title": "Arrivals", "desc": "Every day of the year is a string, as long as the births on it.", "url": "https://broken-silo.com/", "track": "i"}, {"id": "springs", "group": "silo", "shelf": "Test press", "title": "Twelve Hundred Springs", "desc": "Kyoto's cherry blossoms, every recorded spring since 812.", "url": "https://broken-silo.com/", "track": "ii"}, {"id": "weathering", "group": "silo", "shelf": "Test press", "title": "Weathering", "desc": "Ten homes, one year of rain from each, as beat pads.", "url": "https://broken-silo.com/", "track": "iii", "pos": "50% 50%"}, {"id": "stoops", "group": "silo", "shelf": "Test press", "title": "Stoops", "desc": "Baltimore's neighborhoods as one row of houses, a beat each, oldest to newest.", "url": "https://broken-silo.com/", "track": "iv"}];
+const BYID=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+/* The hierarchy, by whose idea it is. Rooms hold shelves; a shelf holds tiles or smaller shelves. */
+const TREE=[
+ {id:'originals',name:'Idea explorations',short:'Ideas',tone:'orig',line:"New ways in that Futobi is trying out: the prototypes and Broken Silo.",kids:[
+  {id:'prototypes',name:'Prototypes',line:"Futobi's tries at what comes after the dashboard.",items:['descent','grain-graph','briefing','synthesis']},
+  {id:'broken-silo',name:'Broken Silo',line:"Data you can hear and see. Four tracks, four public datasets. Turn your sound on.",items:['arrivals','springs','weathering','stoops']}]},
+ {id:'applied',name:'Projects',short:'Projects',tone:'applied',line:"Finished pieces built on proven chart forms: a year of pipeline loads, a report, and one small model seen from every side.",kids:[
+  {id:'engineers-eye',name:"Engineer's eye",line:"A year of pipeline loads, seen the way an engineer sees them.",items:['heartbeat','transit','constellation','dq-calendar','schema-drift']},
+  {id:'pressroom',name:'Pressroom',line:"One report page and the design system behind it.",items:['report','system']},
+  {id:'data-model-lab',name:'Data Model Lab',line:"Interactive pictures of one small model, from lineage down to the engine.",kids:[
+   {id:'lineage',name:'Lineage',line:"Where every table and column comes from.",items:['lineage-flow','column-lineage']},
+   {id:'structure',name:'Structure',line:"Layers, stars and the dimensions they share.",items:['medallion','star-schema','bus-matrix']},
+   {id:'engine',name:'Engine',line:"How the model answers a report.",items:['engine','semantic']}]}]},
+ {id:'references',name:'References',short:'References',tone:'refs',line:"What this lab learned from: studies after Few and Tufte, newer forms, and the Field Guide.",kids:[
+  {id:'few',name:'After Few',line:"Bullet graphs, a one-screen dashboard, table or graph.",items:['bullets','dashboard','table-or-graph']},
+  {id:'tufte',name:'After Tufte',line:"Sparklines, slopegraphs, small multiples.",items:['sparklines','slopegraph','multiples']},
+  {id:'forms',name:'Newer forms',line:"A scrolling story, uncertainty, linked views.",items:['scrolly','uncertainty','linked']},
+  {id:'field-guide',name:'Field Guide',line:"The Field Guide, and the sample model every page reads.",items:['guide','model']}]}
+];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ext=u=>/^https?:/.test(u)&&!/^https:\/\/labs\.tannerspaulding\.com\//.test(u);
+const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const leaves=n=>n.items?n.items.length:n.kids.reduce((a,c)=>a+leaves(c),0);
+
+/* ---------- layout: every box placed once, in world units ---------- */
+const U=100,TH=62.5,CH=24,IH=TH+CH,G=6,PAD=[14,12,8,6],HEAD=[14,62,24,22],GAP=[12,10,8,6];
+function box(node,d,P){
+  const pad=PAD[d],hd=HEAD[d];
+  if(node.items){const its=node.items.map(id=>BYID[id]),k=Math.min(P.k,its.length),r=Math.ceil(its.length/k);
+    return {node,d,w:2*pad+k*U+(k-1)*G,h:hd+r*IH+(r-1)*G+pad,cells:its.map((it,n)=>({it,x:pad+(n%k)*(U+G),y:hd+Math.floor(n/k)*(IH+G),w:U,h:IH}))}}
+  const kids=node.kids.map(c=>box(c,d+1,P)),m=Math.min(P.m[d],kids.length),gap=GAP[d],cw=Math.max(...kids.map(b=>b.w)),col=Array(m).fill(0);
+  kids.forEach(b=>{widen(b,cw);const c=col.indexOf(Math.min(...col));b.x=pad+c*(cw+gap);b.y=hd+col[c];col[c]+=b.h+gap});
+  return {node,d,w:2*pad+m*cw+(m-1)*gap,h:hd+Math.max(...col)-gap+pad,kids}}
+function widen(b,W){const dx=(W-b.w)/2;b.w=W;(b.cells||b.kids).forEach(c=>c.x+=dx)}
+let L=null;
+function layout(){
+  const v=view(),target=v.w/v.h,root={id:'',kids:TREE},leafA=ITEMS.length*U*IH;let best=null,bs=1e9;
+  for(const m0 of [1,2,3])for(const m1 of [1,2,3])for(const m2 of [1,2,3])for(const k of [2,3]){
+    const b=box(root,0,{m:[m0,m1,m2],k}),sc=Math.abs(Math.log((b.w/b.h)/target))+.6*(1-leafA/(b.w*b.h));if(sc<bs){bs=sc;best=b}}
+  const N={};
+  const walk=(b,ox,oy,key,parent)=>{const x=ox+(b.x||0),y=oy+(b.y||0),n=b.node;
+    N[key]={key,kind:b.d===0?'labs':b.d===1?'room':'shelf',d:b.d,node:n,room:b.d===1?n:N[parent]?.room,x,y,w:b.w,h:b.h,parent:b.d?parent:undefined};
+    b.key=key;(b.kids||[]).forEach(c=>walk(c,x,y,(key?key+'/':'')+c.node.id,key));
+    (b.cells||[]).forEach(c=>{c.key=key+'/'+c.it.id;N[c.key]={key:c.key,kind:'item',it:c.it,room:N[key].room,x:x+c.x,y:y+c.y,w:c.w,h:c.h,parent:key}})};
+  walk(best,0,0,'',null);
+  L={root:best,W:best.w,H:best.h,N};
+}
+function draw(){
+  const img=it=>`<img src="thumbs/${it.id}.jpg" alt="" draggable="false" style="height:${TH}px;object-position:${it.pos||'50% 30%'}">`;
+  const cell=c=>`<div class="it" data-k="${esc(c.key)}" style="left:${c.x}px;top:${c.y}px;width:${c.w}px;height:${c.h}px">${img(c.it)}<i>${esc(c.it.title)}</i></div>`;
+  const pos=b=>`left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px`;
+  const html=b=>{const n=b.node,inner=(b.cells||[]).map(cell).join('')+(b.kids||[]).map(html).join('');
+    if(b.d===1){const fs=Math.min(40,(b.w-24)/((n.name.length+1)*.46)),meta=`${n.kids.length} shelves<br>${leaves(n)} explorations`;
+      return `<div class="room ${n.tone}" data-k="${esc(b.key)}" style="${pos(b)}"><div class="rhd"><b style="font-size:${fs.toFixed(1)}px">${esc(n.name)}.</b>${b.w>=320?`<span>${meta}</span>`:''}</div>${inner}</div>`}
+    return `<div class="shelf${b.d>2?' sub':''}" data-k="${esc(b.key)}" style="${pos(b)}"><div class="shd"><b>${esc(n.name)}</b><span>${leaves(n)}</span></div>${inner}</div>`};
+  const w=document.getElementById('world');w.style.cssText=`width:${L.W}px;height:${L.H}px`;w.innerHTML=L.root.kids.map(html).join('');
+}
+
+/* ---------- camera ---------- */
+const cam={x:0,y:0,s:1};let anim=0;
+const world=()=>document.getElementById('world');
+function view(){ /* the part of the screen between the bar and the sheet */
+  const t=document.querySelector('.bar').getBoundingClientRect().bottom,b=document.querySelector('.sheet').getBoundingClientRect().top;
+  return {x:0,y:t,w:innerWidth,h:Math.max(120,b-t)}}
+function fit(n,pad){const v=view();pad=pad??(n.kind==='item'?.9:.94);const s=Math.min(v.w/n.w,v.h/n.h)*pad;return {s,x:v.x+v.w/2-(n.x+n.w/2)*s,y:v.y+v.h/2-(n.y+n.h/2)*s}}
+function apply(){world().style.transform=`translate(${cam.x}px,${cam.y}px) scale(${cam.s})`}
+function limits(){const all=fit(L.N['']).s,item=Math.min(...Object.values(L.N).filter(n=>n.kind==='item').map(n=>fit(n).s));return [all*.8,item*1.8]}
+function clampCam(){const [a,b]=limits();cam.s=Math.min(b,Math.max(a,cam.s));const v=view();
+  cam.x=Math.min(v.x+v.w*.6,Math.max(v.x+v.w*.4-L.W*cam.s,cam.x));cam.y=Math.min(v.y+v.h*.6,Math.max(v.y+v.h*.4-L.H*cam.s,cam.y))}
+function flyTo(n,instant){
+  cancelAnimationFrame(anim);const to=fit(n);
+  if(instant||reduce()){Object.assign(cam,to);apply();return Promise.resolve()}
+  const v=view(),vc=[v.x+v.w/2,v.y+v.h/2];
+  const c0=[(vc[0]-cam.x)/cam.s,(vc[1]-cam.y)/cam.s],c1=[(vc[0]-to.x)/to.s,(vc[1]-to.y)/to.s],s0=cam.s,s1=to.s;
+  const ratio=Math.abs(Math.log(s1/s0)),dist=Math.hypot(c1[0]-c0[0],c1[1]-c0[1])*Math.min(s0,s1)/v.w;
+  const dur=Math.min(900,420+ratio*140+dist*160),t0=performance.now();
+  world().classList.add('moving');
+  return new Promise(res=>{const step=now=>{let t=Math.min(1,(now-t0)/dur);const e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+    /* scale moves on a log curve; the centre follows the scale, so the target grows out from where it sits */
+    const s=Math.exp(Math.log(s0)+(Math.log(s1)-Math.log(s0))*e);
+    const f=s1===s0?e:(1/s-1/s0)/(1/s1-1/s0);const cx=c0[0]+(c1[0]-c0[0])*f,cy=c0[1]+(c1[1]-c0[1])*f;
+    cam.s=s;cam.x=vc[0]-cx*s;cam.y=vc[1]-cy*s;apply();
+    if(t<1)anim=requestAnimationFrame(step);else{world().classList.remove('moving');res()}};anim=requestAnimationFrame(step)})
+}
+
+/* ---------- focus, breadcrumb, sheet ---------- */
+let focus='';
+const chain=k=>{const out=[];let n=L.N[k];while(n){out.unshift(n);n=n.parent!==undefined?L.N[n.parent]:null}return out};
+const label=n=>n.kind==='labs'?'Labs':n.kind==='room'?n.node.short:n.kind==='shelf'?n.node.name:n.it.title;
+function setFocus(k){
+  focus=L.N[k]?k:'';const ch=chain(focus);
+  document.getElementById('crumbs').innerHTML=ch.map((n,i)=>`${i?'<span class="sep">/</span>':''}<a href="#${n.key||'labs'}"${i===ch.length-1?' aria-current="page"':''}>${esc(label(n))}</a>`).join('');
+  document.getElementById('out').disabled=!focus;
+  document.querySelectorAll('.it.on').forEach(e=>e.classList.remove('on'));
+  const n=L.N[focus],sh=document.getElementById('sheet');
+  const sib=n.kind==='labs'?[]:Object.values(L.N).filter(x=>x.parent===n.parent&&x.kind===n.kind);
+  const at=sib.indexOf(n),walk=sib.length>1?`<button type="button" data-step="-1" aria-label="Previous" ${at>0?'':'disabled'}>‹</button><button type="button" data-step="1" aria-label="Next" ${at<sib.length-1?'':'disabled'}>›</button>`:'';
+  const kids=nd=>nd.kids?`${nd.kids.length} shelves · ${leaves(nd)} explorations`:`${nd.items.length} ${nd.id==='broken-silo'?'tracks':'explorations'}`;
+  const where=ch.slice(1,-1).map(label).join(' · ');
+  if(n.kind==='labs')sh.innerHTML=`<div><div class="k">Futobi Labs · ${ITEMS.length} explorations</div><h1>Futobi Labs</h1><p>Idea explorations, finished projects, and the references behind them. Tap a room to zoom in.</p></div>`;
+  else if(n.kind==='item'){const it=n.it;document.querySelector(`.it[data-k="${CSS.escape(n.key)}"]`)?.classList.add('on');
+    sh.innerHTML=`<div><div class="k">${esc(where)}${it.track?' · Track '+esc(it.track):''}</div><h1>${esc(it.title)}</h1><p>${esc(it.desc)}</p></div><div class="acts">${walk}<a class="open" href="${esc(it.url)}"${ext(it.url)?' target="_blank" rel="noopener"':''}>Open ↗</a></div>`}
+  else sh.innerHTML=`<div><div class="k">${where?esc(where)+' · ':''}${kids(n.node)}</div><h1>${esc(n.node.name)}</h1><p>${esc(n.node.line)}</p></div><div class="acts">${walk}</div>`;
+  document.title=(focus?ch.slice(1).map(label).join(' / ')+' · ':'')+'Map · Futobi Labs';
+}
+async function go(k,{push=true,instant=false}={}){
+  if(!L.N[k])k='';
+  setFocus(k);
+  if(push&&('#'+(k||'labs'))!==location.hash)location.hash=k||'labs';await flyTo(L.N[k],instant);
+}
+const fromHash=()=>{const h=decodeURIComponent(location.hash.replace(/^#/,''));return h==='labs'?'':h};
+addEventListener('hashchange',()=>{const k=fromHash();if((L.N[k]?k:'')!==focus)go(k,{push:false})});
+document.getElementById('out').addEventListener('click',()=>{const n=L.N[focus];if(n&&n.parent!==undefined)go(n.parent)});
+document.getElementById('sheet').addEventListener('click',e=>{const b=e.target.closest('[data-step]');if(!b)return;const n=L.N[focus];
+  const sib=Object.values(L.N).filter(x=>x.parent===n.parent&&x.kind===n.kind),j=sib.indexOf(n)+(+b.dataset.step);if(sib[j])go(sib[j].key)});
+addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('out').click()});
+
+/* ---------- taps: zoom one level deeper each time, open only once a tile fills the view ---------- */
+function tapAt(target){
+  const el=target&&target.closest&&target.closest('[data-k]');if(!el)return;const ch=chain(el.dataset.k).slice(1);
+  for(const n of ch){if(cam.s<fit(n).s*.82){go(n.key);return}}
+  const leaf=ch[ch.length-1];if(leaf&&leaf.kind==='item'){if(focus!==leaf.key)go(leaf.key);else if(ext(leaf.it.url))window.open(leaf.it.url,'_blank','noopener');else location.href=leaf.it.url}
+}
+
+/* ---------- pinch, drag and wheel ---------- */
+const vp=document.getElementById('vp'),P=new Map();let moved=0,last=null,settleT=0;
+function zoomAbout(px,py,f){const s=cam.s*f,[a,b]=limits(),s2=Math.min(b,Math.max(a,s));f=s2/cam.s;cam.x=px-(px-cam.x)*f;cam.y=py-(py-cam.y)*f;cam.s=s2}
+function settle(){clearTimeout(settleT);settleT=setTimeout(()=>{world().classList.remove('moving');
+  /* after free movement, the focus is the deepest box at the centre that is already as big as its zoom */
+  const v=view(),wx=(v.x+v.w/2-cam.x)/cam.s,wy=(v.y+v.h/2-cam.y)/cam.s;let k='';
+  for(const n of Object.values(L.N))if(n.kind!=='labs'&&wx>=n.x&&wx<=n.x+n.w&&wy>=n.y&&wy<=n.y+n.h&&cam.s>=fit(n).s*.82&&chain(n.key).length>chain(k).length)k=n.key;
+  if(k!==focus){setFocus(k);history.replaceState(null,'','#'+(k||'labs'))}},160)}
+vp.addEventListener('pointerdown',e=>{cancelAnimationFrame(anim);vp.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);moved=0;last=null});
+vp.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;const prev=P.get(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);
+  if(P.size===1){const dx=e.clientX-prev[0],dy=e.clientY-prev[1];moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){vp.classList.add('grab');world().classList.add('moving');cam.x+=dx;cam.y+=dy;clampCam();apply()}}
+  else if(P.size===2){const [a,b]=[...P.values()],mid=[(a[0]+b[0])/2,(a[1]+b[1])/2],d=Math.hypot(a[0]-b[0],a[1]-b[1]);moved=99;
+    if(last){world().classList.add('moving');cam.x+=mid[0]-last.mid[0];cam.y+=mid[1]-last.mid[1];zoomAbout(mid[0],mid[1],d/last.d);clampCam();apply()}last={mid,d}}});
+const up=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);last=null;if(!P.size){vp.classList.remove('grab');if(moved>8)settle()}};
+vp.addEventListener('pointerup',e=>{const wasTap=P.size===1&&moved<=8;up(e);if(wasTap)tapAt(document.elementFromPoint(e.clientX,e.clientY)||vp)});
+vp.addEventListener('pointercancel',up);
+vp.addEventListener('wheel',e=>{e.preventDefault();cancelAnimationFrame(anim);world().classList.add('moving');
+  zoomAbout(e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0018)));clampCam();apply();settle()},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault()); /* Safari page zoom */
+
+/* ---------- start ---------- */
+function start(){layout();draw();const k=fromHash();setFocus(L.N[k]?k:'');flyTo(L.N[focus],true)}
+let rz=0;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(start,150)});
+start();
+</script>
+</body></html>

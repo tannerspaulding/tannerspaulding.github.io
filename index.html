@@ -209,6 +209,15 @@ p{margin:0;max-width:60ch}
   .shift td:last-child{padding-left:10px;margin-top:4px}.shift td:last-child::before{content:"Starting to shift · ";font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}}
 .plates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
 @media (max-width:620px){.plates{grid-template-columns:minmax(0,1fr)}}
+.mapband{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+@media (max-width:720px){.mapband{grid-template-columns:1fr}}
+.mb{display:grid;grid-template-rows:auto auto 1fr;gap:4px;min-height:200px;padding:14px;border:1.5px solid var(--ink);text-decoration:none;color:var(--ink)}
+.mb.orig{background:var(--sun)}.mb.applied{background:var(--cobalt);color:var(--paper2)}.mb.refs{background:var(--stone)}
+.mb b{font:850 clamp(26px,5vw,34px)/.9 var(--disp);font-variation-settings:"wdth" 66;text-transform:uppercase}
+.mb span{font:500 10.5px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.mb .th{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;align-self:end;margin-top:10px}
+.mb .th img{display:block;width:100%;aspect-ratio:8/5;object-fit:cover;border:1.2px solid var(--ink);background:var(--paper2)}
+.mb:hover b,.mb:focus-visible b{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
 .plate{position:relative;display:grid;gap:8px;align-content:end;min-height:180px;padding:14px;border:1.5px solid var(--ink);text-decoration:none;overflow:hidden}
 .plate b{font:850 34px/.86 var(--disp);font-variation-settings:"wdth" 62;text-transform:uppercase}
 .plate span{font:500 10.5px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase}
@@ -242,6 +251,15 @@ p{margin:0;max-width:60ch}
 </div></section>
 
 <div class="wrap">
+<section class="sec" id="map">
+  <div class="sh"><h3>Every piece, on one map</h3><span>33 pieces · tap to zoom in</span></div>
+  <div class="mapband">
+    <a class="mb orig" href="/map/#originals"><b>Idea explorations</b><span>Prototypes and Broken Silo · 8</span><span class="th"><img src="/map/thumbs/descent.jpg" alt="" loading="lazy"><img src="/map/thumbs/grain-graph.jpg" alt="" loading="lazy"><img src="/map/thumbs/arrivals.jpg" alt="" loading="lazy"></span></a>
+    <a class="mb applied" href="/map/#applied"><b>Projects</b><span>Engineer's eye, Pressroom, Data Model Lab · 14</span><span class="th"><img src="/map/thumbs/heartbeat.jpg" alt="" loading="lazy"><img src="/map/thumbs/report.jpg" alt="" loading="lazy"><img src="/map/thumbs/star-schema.jpg" alt="" loading="lazy"></span></a>
+    <a class="mb refs" href="/map/#references"><b>References</b><span>After Few and Tufte, newer forms, Field Guide · 11</span><span class="th"><img src="/map/thumbs/bullets.jpg" alt="" loading="lazy"><img src="/map/thumbs/sparklines.jpg" alt="" loading="lazy"><img src="/map/thumbs/guide.jpg" alt="" loading="lazy"></span></a>
+  </div>
+</section>
+
 <section class="sec">
   <div class="sh"><h3>Why Futobi</h3><span>the name</span></div>
   <div class="prose">
